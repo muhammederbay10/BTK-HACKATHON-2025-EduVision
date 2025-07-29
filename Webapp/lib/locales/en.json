@@ -1,0 +1,47 @@
+{
+  "nav": {
+    "upload": "Upload",
+    "history": "History",
+    "about": "About"
+  },
+  "home": {
+    "title": "Transform Your Virtual Teaching",
+    "subtitle": "Discover how engaged your students are during virtual lessons. Upload your video recordings and get actionable insights to improve student attention and learning outcomes.",
+    "uploadButton": "Upload Your First Video",
+    "sampleReportsButton": "View Sample Reports",
+    "features": {
+      "videoAnalysis": {
+        "title": "Video Analysis",
+        "description": "Upload your virtual lesson recordings and get comprehensive engagement insights"
+      },
+      "aiInsights": {
+        "title": "AI-Powered Insights",
+        "description": "Advanced algorithms analyze student attention patterns and engagement levels"
+      },
+      "performanceMetrics": {
+        "title": "Performance Metrics",
+        "description": "Track attention trends over time and identify peak engagement moments"
+      },
+      "studentAnalytics": {
+        "title": "Student Analytics",
+        "description": "Understand individual and group attention patterns for better teaching"
+      }
+    },
+    "demo": {
+      "title": "Ready to Get Started?",
+      "subtitle": "See how AttentionLens can help you understand and improve student engagement in your virtual lessons.",
+      "step1": {
+        "title": "Upload Video",
+        "description": "Drag and drop your lesson recording"
+      },
+      "step2": {
+        "title": "AI Analysis",
+        "description": "Our AI analyzes student engagement"
+      },
+      "step3": {
+        "title": "Get Insights",
+        "description": "Receive actionable feedback and metrics"
+      }
+    }
+  }
+}
