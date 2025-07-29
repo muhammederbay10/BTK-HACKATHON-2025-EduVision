@@ -50,7 +50,7 @@ class GeminiReportGenerator:
                 generation_config=generation_config
             )
 
-            if response.txt:
+            if response.text:
                 return {
                     "success": True,
                     "report": response.txt.strip()
