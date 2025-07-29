@@ -80,11 +80,3 @@ class GeminiReportGenerator:
             self.logger.error(f"Connection test failed: {str(e)}")
             return False
         
-# Quick test
-if __name__ == "__main__":
-    generator = GeminiReportGenerator()
-    
-    if generator.test_connection():
-        print("✅ Gemini API connection successful!")
-    else:
-        print("❌ Gemini API connection failed!")
