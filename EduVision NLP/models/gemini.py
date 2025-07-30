@@ -53,7 +53,7 @@ class GeminiReportGenerator:
             if response.text:
                 return {
                     "success": True,
-                    "report": response.txt.strip()
+                    "report": response.text.strip()
                 }
             else:
                 return {
