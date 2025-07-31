@@ -5,60 +5,56 @@ from typing import Dict, List, Optional
 class ReportFormatter:
     """
     A helper module to clean, structure, and reformat AI-generated reports.
+    Updated for classroom-wide reports.
     """
     
     def __init__(self):
-        """
-        Initialize the formatter with default settings.
-        """
+        """Initialize the formatter with updated section headers for classroom reports."""
         self.section_headers = [
-            "PERFORMANCE REPORT",
-            "PERFORMANCE SUMMARY", 
-            "RECOMMENDATIONS",
-            "ACTIONABLE RECOMMENDATIONS",
-            "PATTERN ANALYSIS",
-            "CONCERNING PATTERNS",
-            "INTERVENTION URGENCY",
-            "URGENCY RATING"
+            "CLASSROOM OVERVIEW",
+            "PERFORMANCE HIGHLIGHTS", 
+            "TIME-BASED RECOMMENDATIONS",
+            "TARGETED STUDENT INTERVENTIONS",
+            "CLASSROOM MANAGEMENT STRATEGIES",
+            "INTERVENTION PRIORITY"
         ]
 
-    def format_report(self, raw_report: str, student_name: str, student_id: str) -> Dict[str, str]:
+    def format_report(self, raw_report: str, class_name: str, class_id: str) -> Dict[str, str]:
         """
-        Clean and structure the raw AI-generated report.
+        Clean and structure the raw AI-generated classroom report.
 
         Args:
             raw_report (str): Raw text from Gemini API
-            student_name (str): student's name
-            student_id (str): student's ID
+            class_name (str): Name of the class/course
+            class_id (str): Class identifier
 
         Returns:
             Dict[str, str]: Structured report with separate sections.
         """
-
         # Clean the raw text 
         cleaned_text = self._clean_text(raw_report)
 
-        # Extract sections
-        sections = self._extract_sections(cleaned_text)
+        # Extract sections for classroom report
+        sections = self._extract_classroom_sections(cleaned_text)
 
         # Format each section
         formatted_report = {
-            "student_name": student_name,
-            "student_id": student_id,
+            "class_name": class_name,
+            "class_id": class_id,
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "performance_summary": self._format_performance_section(sections.get('performance', '')),
-            "recommendations": self._format_recommendations_section(sections.get('recommendations', '')),
-            "pattern_analysis": self._format_pattern_section(sections.get('patterns', '')),
-            "urgency_rating": self._format_urgency_section(sections.get('urgency', '')),
-            "full_report": self._create_full_formatted_report(sections, student_name, student_id)
+            "classroom_overview": self._format_overview_section(sections.get('overview', '')),
+            "performance_highlights": self._format_performance_highlights(sections.get('performance', '')),
+            "time_recommendations": self._format_time_recommendations(sections.get('time_recommendations', '')),
+            "student_interventions": self._format_student_interventions(sections.get('interventions', '')),
+            "management_strategies": self._format_management_strategies(sections.get('strategies', '')),
+            "intervention_priority": self._format_intervention_priority(sections.get('priority', '')),
+            "full_report": self._create_full_classroom_report(sections, class_name, class_id)
         }
 
         return formatted_report
     
     def _clean_text(self, text: str) -> str:
-        """
-        Remove unwanted characters and normalize spacing.
-        """
+        """Remove unwanted characters and normalize spacing."""
         # Remove extra whitespace
         text = re.sub(r'\s+', ' ', text)
 
@@ -74,29 +70,35 @@ class ReportFormatter:
         
         return text.strip()
     
-    def _extract_sections(self, text: str) -> Dict[str, str]:
-        """
-        Extract different sections from the report text.
-        """
+    def _extract_classroom_sections(self, text: str) -> Dict[str, str]:
+        """Extract different sections from the classroom report text."""
         sections = {}
 
-        # Improved section patterns
+        # Updated patterns for classroom report sections
         patterns = {
+            'overview': [
+                r'(?:##\s*CLASSROOM\s+OVERVIEW)[\s:]*\n*(.*?)(?=(?:##\s*PERFORMANCE|##\s*TIME|$))',
+                r'(?:CLASSROOM\s+OVERVIEW)[\s:]*\n*(.*?)(?=(?:PERFORMANCE|TIME|$))'
+            ],
             'performance': [
-                r'(?:##\s*PERFORMANCE\s+(?:REPORT|SUMMARY))[\s:]*\n*(.*?)(?=(?:##\s*RECOMMENDATIONS|##\s*PATTERN|##\s*INTERVENTION|$))',
-                r'(?:PERFORMANCE\s+(?:REPORT|SUMMARY))[\s:]*\n*(.*?)(?=(?:RECOMMENDATIONS|PATTERN|URGENCY|$))'
+                r'(?:##\s*PERFORMANCE\s+HIGHLIGHTS)[\s:]*\n*(.*?)(?=(?:##\s*TIME|##\s*TARGETED|$))',
+                r'(?:PERFORMANCE\s+HIGHLIGHTS)[\s:]*\n*(.*?)(?=(?:TIME|TARGETED|$))'
             ],
-            'recommendations': [
-                r'(?:##\s*(?:ACTIONABLE\s+)?RECOMMENDATIONS)[\s:]*\n*(.*?)(?=(?:##\s*PATTERN|##\s*INTERVENTION|$))',
-                r'(?:(?:ACTIONABLE\s+)?RECOMMENDATIONS)[\s:]*\n*(.*?)(?=(?:PATTERN|URGENCY|$))'
+            'time_recommendations': [
+                r'(?:##\s*TIME-BASED\s+RECOMMENDATIONS)[\s:]*\n*(.*?)(?=(?:##\s*TARGETED|##\s*CLASSROOM\s+MANAGEMENT|$))',
+                r'(?:TIME-BASED\s+RECOMMENDATIONS)[\s:]*\n*(.*?)(?=(?:TARGETED|CLASSROOM\s+MANAGEMENT|$))'
             ],
-            'patterns': [
-                r'(?:##\s*PATTERN\s+ANALYSIS)[\s:]*\n*(.*?)(?=(?:##\s*INTERVENTION|$))',
-                r'(?:PATTERN\s+ANALYSIS|CONCERNING\s+PATTERNS)[\s:]*\n*(.*?)(?=(?:URGENCY|$))'
+            'interventions': [
+                r'(?:##\s*TARGETED\s+STUDENT\s+INTERVENTIONS)[\s:]*\n*(.*?)(?=(?:##\s*CLASSROOM\s+MANAGEMENT|##\s*INTERVENTION\s+PRIORITY|$))',
+                r'(?:TARGETED\s+STUDENT\s+INTERVENTIONS)[\s:]*\n*(.*?)(?=(?:CLASSROOM\s+MANAGEMENT|INTERVENTION\s+PRIORITY|$))'
             ],
-            'urgency': [
-                r'(?:##\s*INTERVENTION\s+URGENCY)[\s:]*\n*(.*?)$',
-                r'(?:INTERVENTION\s+URGENCY|URGENCY\s+RATING)[\s:]*\n*(.*?)$'
+            'strategies': [
+                r'(?:##\s*CLASSROOM\s+MANAGEMENT\s+STRATEGIES)[\s:]*\n*(.*?)(?=(?:##\s*INTERVENTION\s+PRIORITY|$))',
+                r'(?:CLASSROOM\s+MANAGEMENT\s+STRATEGIES)[\s:]*\n*(.*?)(?=(?:INTERVENTION\s+PRIORITY|$))'
+            ],
+            'priority': [
+                r'(?:##\s*INTERVENTION\s+PRIORITY)[\s:]*\n*(.*?)$',
+                r'(?:INTERVENTION\s+PRIORITY)[\s:]*\n*(.*?)$'
             ]
         }
         
@@ -109,176 +111,217 @@ class ReportFormatter:
 
         return sections
     
-    def _format_performance_section(self, text: str) -> str:
-        """
-        Format the performance summary section.
-        """
+    def _format_overview_section(self, text: str) -> str:
+        """Format the classroom overview section."""
         if not text:
-            return "Performance summary not available."
+            return "Classroom overview not available."
         
-        # Clean and format
         text = self._clean_text(text)
         
-        # Ensure it ends with proper punctuation
         if text and not text.endswith(('.', '!', '?')):
             text += '.'
         
         return text
 
-    def _format_recommendations_section(self, text: str) -> List[str]:
-        """
-        Format the recommendations into a structured List.
-        """
+    def _format_performance_highlights(self, text: str) -> str:
+        """Format the performance highlights section."""
         if not text:
-            return ["No recommendations provided."]
+            return "Performance highlights not available."
         
-        # Extract bullet points or numbered items
-        recommendations = []
+        text = self._clean_text(text)
+        
+        # Ensure student IDs are properly formatted
+        text = re.sub(r'\bID-?(\w+)', r'ID-\1', text)
+        
+        if text and not text.endswith(('.', '!', '?')):
+            text += '.'
+        
+        return text
 
-        # Split by lines and process
-        lines = text.split("\n")
-        current_rec = ""
+    def _format_time_recommendations(self, text: str) -> str:
+        """Format the time-based recommendations section."""
+        if not text:
+            return "Time-based recommendations not available."
+        
+        text = self._clean_text(text)
+        
+        # Ensure time periods are clearly formatted
+        text = re.sub(r'(\d+)-(\d+)\s*min', r'\1-\2 minutes', text)
+        
+        if text and not text.endswith(('.', '!', '?')):
+            text += '.'
+        
+        return text
 
-        for line in lines:
-            line = line.strip()
-            if not line:
-                continue
+    def _format_student_interventions(self, text: str) -> str:
+        """Format the student interventions section."""
+        if not text:
+            return "Student intervention recommendations not available."
+        
+        text = self._clean_text(text)
+        
+        # Ensure student IDs are properly formatted
+        text = re.sub(r'\bID-?(\w+)', r'ID-\1', text)
+        
+        if text and not text.endswith(('.', '!', '?')):
+            text += '.'
+        
+        return text
+
+    def _format_management_strategies(self, text: str) -> List[str]:
+        """Format the classroom management strategies into a list."""
+        if not text:
+            return ["No management strategies provided."]
+        
+        strategies = []
+        
+        # Look for numbered strategies
+        numbered_pattern = r'(\d+)\.\s*\*\*([^*]+)\*\*:?\s*(.*?)(?=(?:\d+\.|$))'
+        matches = re.findall(numbered_pattern, text, re.DOTALL)
+        
+        if matches:
+            for num, title, content in matches:
+                strategy = f"{title.strip()}: {content.strip()}"
+                if not strategy.endswith(('.', '!', '?')):
+                    strategy += '.'
+                strategies.append(strategy)
+        else:
+            # Fallback: split by common patterns
+            lines = text.split('\n')
+            current_strategy = ""
             
-            # Check if it's a new recommendation (starts with bullet, number, or dash)
-            if re.match(r'^[\-\*\•]\s*', line) or re.match(r'^\d+\.?\s*', line):
-                # Save previous recommendation if exists
-                if current_rec:
-                    recommendations.append(self._clean_recommendation(current_rec))
-                # Start new recommendation, removing the bullet/number
-                current_rec = re.sub(r'^[\-\*\•\d\.]\s*', '', line)
-            else:
-                # Continue current recommendation
-                if current_rec:
-                    current_rec += " " + line
+            for line in lines:
+                line = line.strip()
+                if not line:
+                    continue
+                
+                if re.match(r'^\d+\.', line) or re.match(r'^\*\*', line):
+                    if current_strategy:
+                        strategies.append(self._clean_strategy(current_strategy))
+                    current_strategy = line
                 else:
-                    current_rec = line
-
-        # Add the last recommendation
-        if current_rec:
-            recommendations.append(self._clean_recommendation(current_rec))
-
-        # If still no structured recommendations, try splitting by common separators
-        if not recommendations or len(recommendations) == 1:
-            # Try splitting by common patterns like "- Long-term:", "Parent involvement:", etc.
-            parts = re.split(r'\s*-\s*(?:Immediate|Long-term|Parent|Home|Classroom)', text)
-            if len(parts) > 1:
-                recommendations = []
-                for i, part in enumerate(parts[1:], 1):  # Skip first empty part
-                    clean_part = part.strip().rstrip(':').strip()
-                    if clean_part:
-                        recommendations.append(self._clean_recommendation(clean_part))
+                    current_strategy += " " + line if current_strategy else line
+            
+            if current_strategy:
+                strategies.append(self._clean_strategy(current_strategy))
         
-        # Final fallback: split by sentences
-        if not recommendations:
-            sentences = re.split(r'[.!?]+', text)
-            recommendations = [self._clean_recommendation(s.strip()) for s in sentences if s.strip()]
+        return strategies[:4]  # Limit to 4 strategies as requested
+
+    def _clean_strategy(self, strategy: str) -> str:
+        """Clean individual strategy text."""
+        strategy = strategy.strip()
         
-        return recommendations[:3]  # Limit to 3 recommendations as requested
-
-    def _clean_recommendation(self, rec: str) -> str:
-        """
-        Clean individual recommendation text.
-        """
-        rec = rec.strip()
-
-        # Remove category prefixes like "Immediate:", "Long-term:", etc.
-        rec = re.sub(r'^(?:Immediate|Long-term|Home|Parent|Classroom)\s*(?:strategy|intervention|involvement)?\s*:?\s*', '', rec, flags=re.IGNORECASE)
-
-        # Remove leading dashes or bullets that might remain
-        rec = re.sub(r'^[\-\*\•\s]*', '', rec)
-
+        # Remove numbers and asterisks
+        strategy = re.sub(r'^\d+\.\s*', '', strategy)
+        strategy = re.sub(r'\*\*([^*]+)\*\*:?\s*', r'\1: ', strategy)
+        
         # Ensure proper capitalization
-        if rec:
-            rec = rec[0].upper() + rec[1:] if len(rec) > 1 else rec.upper()
+        if strategy:
+            strategy = strategy[0].upper() + strategy[1:] if len(strategy) > 1 else strategy.upper()
         
         # Ensure proper punctuation
-        if rec and not rec.endswith(('.', '!', '?')):
-            rec += '.'
+        if strategy and not strategy.endswith(('.', '!', '?')):
+            strategy += '.'
         
-        return rec
+        return strategy
 
-    def _format_pattern_section(self, text: str) -> str:
-        """
-        Format the pattern analysis section.
-        """
+    def _format_intervention_priority(self, text: str) -> Dict[str, any]:
+        """Format the intervention priority section."""
         if not text:
-            return "No concerning patterns identified."
+            return {
+                "high_priority": [],
+                "medium_priority": [],
+                "peak_times": [],
+                "urgency_level": "Unknown"
+            }
         
         text = self._clean_text(text)
         
-        # Remove any stray section headers that might have been captured
-        text = re.sub(r'^(?:ANALYSIS|PATTERN\s+ANALYSIS)[\s:]*', '', text, flags=re.IGNORECASE)
+        # Extract high priority students
+        high_priority_match = re.search(r'high\s+priority[^:]*:?\s*([^-\n]*)', text, re.IGNORECASE)
+        high_priority = self._extract_student_ids(high_priority_match.group(1) if high_priority_match else "")
         
-        # Ensure proper punctuation
-        if text and not text.endswith(('.', '!', '?')):
-            text += '.'
+        # Extract medium priority students
+        medium_priority_match = re.search(r'medium\s+priority[^:]*:?\s*([^-\n]*)', text, re.IGNORECASE)
+        medium_priority = self._extract_student_ids(medium_priority_match.group(1) if medium_priority_match else "")
         
-        return text
-    
-    def _format_urgency_section(self, text: str) -> Dict[str, str]:
-        """Extract urgency level and explanation."""
-        if not text:
-            return {"level": "Unknown", "explanation": "Urgency level not specified."}
-        
-        text = self._clean_text(text)
+        # Extract peak distraction times
+        peak_times_match = re.search(r'peak\s+distraction\s+times?[^:]*:?\s*([^-\n]*)', text, re.IGNORECASE)
+        peak_times = self._extract_time_periods(peak_times_match.group(1) if peak_times_match else "")
         
         # Extract urgency level
-        urgency_match = re.search(r'\b(Low|Medium|High)\b', text, re.IGNORECASE)
-        urgency_level = urgency_match.group(1).title() if urgency_match else "Unknown"
-        
-        # Extract explanation (text after the urgency level)
-        if urgency_match:
-            explanation = text[urgency_match.end():].strip()
-            explanation = re.sub(r'^[\s\-:]+', '', explanation)  # Remove leading punctuation
-        else:
-            explanation = text
-        
-        if explanation and not explanation.endswith(('.', '!', '?')):
-            explanation += '.'
+        urgency_match = re.search(r'\b(low|medium|high)\b.*urgency', text, re.IGNORECASE)
+        urgency_level = urgency_match.group(1).title() if urgency_match else "Medium"
         
         return {
-            "level": urgency_level,
-            "explanation": explanation or "No explanation provided."
+            "high_priority": high_priority,
+            "medium_priority": medium_priority,
+            "peak_times": peak_times,
+            "urgency_level": urgency_level
         }
+
+    def _extract_student_ids(self, text: str) -> List[str]:
+        """Extract student IDs from text."""
+        if not text:
+            return []
+        
+        # Find all ID patterns
+        id_matches = re.findall(r'ID-?(\w+)', text, re.IGNORECASE)
+        return [f"ID-{id_match}" for id_match in id_matches]
+
+    def _extract_time_periods(self, text: str) -> List[str]:
+        """Extract time periods from text."""
+        if not text:
+            return []
+        
+        # Find time patterns like "5-7 minutes", "18-22", etc.
+        time_matches = re.findall(r'(\d+)-(\d+)\s*(?:min|minutes?)?', text)
+        return [f"{start}-{end} minutes" for start, end in time_matches]
     
-    def _create_full_formatted_report(self, sections: Dict[str, str], student_name: str, student_id: str) -> str:
-        """Create a nicely formatted full report."""
+    def _create_full_classroom_report(self, sections: Dict[str, str], class_name: str, class_id: str) -> str:
+        """Create a nicely formatted full classroom report."""
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
         report = f"""
-STUDENT FOCUS REPORT
-{'='*50}
-Student: {student_name} (ID: {student_id})
+CLASSROOM FOCUS REPORT
+{'='*60}
+Class: {class_name} (ID: {class_id})
 Generated: {timestamp}
 
-PERFORMANCE SUMMARY
-{'-'*30}
-{self._format_performance_section(sections.get('performance', ''))}
+CLASSROOM OVERVIEW
+{'-'*40}
+{self._format_overview_section(sections.get('overview', ''))}
 
-RECOMMENDATIONS
-{'-'*30}
+PERFORMANCE HIGHLIGHTS
+{'-'*40}
+{self._format_performance_highlights(sections.get('performance', ''))}
+
+TIME-BASED RECOMMENDATIONS
+{'-'*40}
+{self._format_time_recommendations(sections.get('time_recommendations', ''))}
+
+STUDENT INTERVENTIONS
+{'-'*40}
+{self._format_student_interventions(sections.get('interventions', ''))}
+
+CLASSROOM MANAGEMENT STRATEGIES
+{'-'*40}
 """
         
-        recommendations = self._format_recommendations_section(sections.get('recommendations', ''))
-        for i, rec in enumerate(recommendations, 1):
-            report += f"{i}. {rec}\n"
+        strategies = self._format_management_strategies(sections.get('strategies', ''))
+        for i, strategy in enumerate(strategies, 1):
+            report += f"{i}. {strategy}\n"
         
-        urgency = self._format_urgency_section(sections.get('urgency', ''))
+        priority = self._format_intervention_priority(sections.get('priority', ''))
         
         report += f"""
-PATTERN ANALYSIS
-{'-'*30}
-{self._format_pattern_section(sections.get('patterns', ''))}
 
-INTERVENTION URGENCY
-{'-'*30}
-Level: {urgency['level']}
-Explanation: {urgency['explanation']}
+INTERVENTION PRIORITY
+{'-'*40}
+High Priority Students: {', '.join(priority['high_priority']) if priority['high_priority'] else 'None'}
+Medium Priority Students: {', '.join(priority['medium_priority']) if priority['medium_priority'] else 'None'}
+Peak Distraction Times: {', '.join(priority['peak_times']) if priority['peak_times'] else 'None identified'}
+Overall Urgency Level: {priority['urgency_level']}
 """
         
         return report.strip()
@@ -298,32 +341,3 @@ Explanation: {urgency['explanation']}
         except Exception:
             return False
 
-# Quick test
-if __name__ == "__main__":
-    # Test the formatter
-    raw_sample = """
-    ## PERFORMANCE REPORT
-    John shows moderate attention levels during the session with some concerning patterns.
-    
-    ## RECOMMENDATIONS
-    - Immediate: Seat student closer to teacher
-    - Long-term: Implement focus breaks every 15 minutes  
-    - Parent involvement: Ensure adequate sleep schedule
-    
-    ## PATTERN ANALYSIS
-    Student shows decreased focus in afternoon sessions.
-    
-    ## INTERVENTION URGENCY
-    Medium - Some attention issues but manageable with proper strategies.
-    """
-    
-    formatter = ReportFormatter()
-    result = formatter.format_report(raw_sample, "John Doe", "STU001")
-    
-    print("FORMATTED REPORT:")
-    print(result['full_report'])
-    print("\nINDIVIDUAL SECTIONS:")
-    print("Performance:", result['performance_summary'])
-    print("Recommendations:", result['recommendations'])
-    print("Patterns:", result['pattern_analysis'])
-    print("Urgency:", result['urgency_rating'])
