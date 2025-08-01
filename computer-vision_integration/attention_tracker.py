@@ -34,6 +34,15 @@ RIGHT_IRIS = [473]
 
 # CSV Output Setup
 def setup_csv_output(csv_file_path=None):
+    """
+    Sets up the CSV logging file. Resumes from existing file or creates a new one.
+
+    Args:
+        csv_file_path (str): Optional custom path for the CSV file.
+
+    Returns:
+        Tuple: (csv_file_path, FIELDNAMES list, starting frame index)
+    """
     if csv_file_path is None:
         csv_file_path = "student_attention_log.csv"
     
@@ -85,10 +94,24 @@ def handle_output_path(output_path):
 =======
 >>>>>>> 5823334 (Add CLI support, refactor CSV logic, and improve error handling)
 
+
+
 # Student IDs (assign face ids)
 student_ids = {}
 
 def assign_student_id(face_landmarks, student_ids, frame_w, frame_h):
+    """
+    Assigns or re-identifies a student ID based on face position.
+
+    Args:
+        face_landmarks: Face landmarks detected by Mediapipe.
+        student_ids (dict): Dictionary of known IDs and their last positions.
+        frame_w (int): Frame width.
+        frame_h (int): Frame height.
+
+    Returns:
+        str: Assigned student ID.
+    """
     # Use the nose tip + left/right eye position to assign/reidentify students
     key_points = [face_landmarks.landmark[i] for i in [1, 33, 263]]
     nose_tip = (int(key_points[0].x*frame_w), int(key_points[0].y*frame_h))
@@ -108,7 +131,19 @@ def assign_student_id(face_landmarks, student_ids, frame_w, frame_h):
     student_ids[new_id] = nose_tip
     return new_id
 
+
+
 def get_gaze_direction(iris, eye_corners):
+    """
+    Estimates gaze direction by comparing iris position relative to the eye.
+
+    Args:
+        iris (list): Coordinates of the iris center.
+        eye_corners (list): Coordinates of the eye corners.
+
+    Returns:
+        str: One of 'Left', 'Center', 'Right', or 'unknown'.
+    """
     eye_left = np.array(eye_corners[0])
     eye_right = np.array(eye_corners[1])
     iris = np.array(iris[0])
@@ -122,7 +157,20 @@ def get_gaze_direction(iris, eye_corners):
     else:
         return "Center"
 
+
+
 def estimate_head_pose(landmarks, frame_w, frame_h):
+    """
+    Estimates the head's rotation vector (3D orientation) using selected landmarks.
+
+    Args:
+        landmarks (dict): Dictionary of facial landmarks.
+        frame_w (int): Frame width.
+        frame_h (int): Frame height.
+
+    Returns:
+        np.ndarray: Rotation vector (3D angle representation).
+    """
     image_points = np.array([
         (landmarks[1][0], landmarks[1][1]),    # Nose tip
         (landmarks[152][0], landmarks[152][1]),# Chin
@@ -150,17 +198,42 @@ def estimate_head_pose(landmarks, frame_w, frame_h):
     success, rotation_vector, translation_vector = cv2.solvePnP(model_points, image_points, camera_matrix, dist_coeffs)
     return rotation_vector
 
+
+
 def get_attention_label(gaze, rotation_vector):
+    """
+    Determines attention status based on gaze direction and yaw angle.
+
+    Args:
+        gaze (str): Estimated gaze direction.
+        rotation_vector (np.ndarray): Head pose rotation vector.
+
+    Returns:
+        Tuple[str, float]: Attention status ('Attentive' or 'Not attentive') and yaw angle in degrees.
+    """
     yaw = rotation_vector[1][0] * (180.0 / np.pi)
     if abs(yaw) > 25 or gaze in ["Left", "Right"]:
         return "Not attentive", yaw
     else:
         return "Attentive", yaw
 
+
+
 # Per student statistics (reinit each session)
 student_data = {}
 
 def update_student_metrics(student_id, attention, timestamp):
+    """
+    Updates a student's attention statistics for the current frame.
+
+    Args:
+        student_id (str): Unique student identifier.
+        attention (str): Attention status ('Attentive' or 'Not attentive').
+        timestamp (float): Current time.
+
+    Returns:
+        dict: Updated metrics for the student.
+    """
     if student_id not in student_data:
         student_data[student_id] = {
             "total_frames": 0, "attentive_frames": 0, "not_attentive_frames": 0,
@@ -183,11 +256,24 @@ def update_student_metrics(student_id, attention, timestamp):
     # Placeholder: focus quality etc
     return data
 
+
+
 def compute_metrics(data):
+    """
+    Computes overall session statistics for a student.
+
+    Args:
+        data (dict): Student's attention metrics.
+
+    Returns:
+        Tuple[float, int, int, float, float, float]: Attention score, events, yawns, closures, duration, rate.
+    """
     attention_score = (data["attentive_frames"] / data["total_frames"])*100 if data["total_frames"] > 0 else 0
     session_duration = (data["last_frame_time"] - data["first_frame_time"])/60
     distraction_rate = data["distraction_events"] / session_duration if session_duration > 0 else 0
     return attention_score, data["distraction_events"], data["yawning_count"], data["eye_closure_duration_sec"], session_duration, distraction_rate
+
+
 
 def main():
     parser = argparse.ArgumentParser(description='Attention Tracker')
