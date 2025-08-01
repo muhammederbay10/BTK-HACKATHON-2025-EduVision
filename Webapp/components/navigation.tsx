@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { MoonIcon, SunIcon } from '@radix-ui/react-icons';
 import { useTheme } from 'next-themes';
 import { motion } from 'framer-motion';
+import { useLanguage } from '@/lib/language-context';
+import { LanguageSwitcher } from '@/components/language-switcher';
 import { 
   UploadIcon, 
   BarChart3Icon, 
@@ -16,11 +18,12 @@ import {
 export function Navigation() {
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
+  const { t } = useLanguage();
 
   const navItems = [
-    { href: '/', label: 'Home', icon: EyeIcon },
-    { href: '/upload', label: 'Upload', icon: UploadIcon },
-    { href: '/history', label: 'History', icon: HistoryIcon },
+    { href: '/upload', label: t('nav.upload'), icon: UploadIcon },
+    { href: '/history', label: t('nav.history'), icon: HistoryIcon },
+    { href: '/about', label: t('nav.about'), icon: BarChart3Icon },
   ];
 
   return (
@@ -35,7 +38,7 @@ export function Navigation() {
             >
               <EyeIcon className="h-6 w-6 text-blue-600" />
               <span className="font-bold text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                AttentionLens
+                EduVision
               </span>
             </motion.div>
           </Link>
@@ -62,6 +65,8 @@ export function Navigation() {
                 </Link>
               );
             })}
+
+            <LanguageSwitcher />
 
             <Button
               variant="ghost"

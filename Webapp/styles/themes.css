@@ -1,0 +1,72 @@
+/* Custom Light Theme - Blue, Black, White */
+.light {
+  /* Primary colors */
+  --background: 255 255 255; /* White background */
+  --foreground: 0 0 0; /* Black text */
+  
+  /* Accent colors using blue */
+  --primary: 59 130 246; /* Blue-500 */
+  --primary-foreground: 255 255 255; /* White on blue */
+  
+  --secondary: 239 246 255; /* Blue-50 */
+  --secondary-foreground: 30 64 175; /* Blue-800 */
+  
+  --accent: 219 234 254; /* Blue-100 */
+  --accent-foreground: 30 58 138; /* Blue-900 */
+  
+  /* UI elements */
+  --card: 255 255 255; /* White */
+  --card-foreground: 0 0 0; /* Black */
+  
+  --border: 147 197 253; /* Blue-300 */
+  --input: 191 219 254; /* Blue-200 */
+  
+  --muted: 248 250 252; /* Slate-50 */
+  --muted-foreground: 71 85 105; /* Slate-600 */
+  
+  --destructive: 239 68 68; /* Red-500 for errors */
+  --destructive-foreground: 255 255 255; /* White */
+  
+  --ring: 59 130 246; /* Blue-500 for focus rings */
+  
+  /* Specific blue shades */
+  --blue-50: 239 246 255;
+  --blue-100: 219 234 254;
+  --blue-200: 191 219 254;
+  --blue-300: 147 197 253;
+  --blue-400: 96 165 250;
+  --blue-500: 59 130 246;
+  --blue-600: 37 99 235;
+  --blue-700: 29 78 216;
+  --blue-800: 30 64 175;
+  --blue-900: 30 58 138;
+}
+
+/* Dark theme fallback */
+.dark {
+  --background: 0 0 0; /* Black background */
+  --foreground: 255 255 255; /* White text */
+  
+  --primary: 96 165 250; /* Blue-400 */
+  --primary-foreground: 0 0 0; /* Black on blue */
+  
+  --secondary: 30 58 138; /* Blue-900 */
+  --secondary-foreground: 219 234 254; /* Blue-100 */
+  
+  --accent: 30 64 175; /* Blue-800 */
+  --accent-foreground: 191 219 254; /* Blue-200 */
+  
+  --card: 15 23 42; /* Slate-900 */
+  --card-foreground: 255 255 255; /* White */
+  
+  --border: 30 64 175; /* Blue-800 */
+  --input: 30 58 138; /* Blue-900 */
+  
+  --muted: 15 23 42; /* Slate-900 */
+  --muted-foreground: 148 163 184; /* Slate-400 */
+  
+  --destructive: 239 68 68; /* Red-500 */
+  --destructive-foreground: 255 255 255; /* White */
+  
+  --ring: 96 165 250; /* Blue-400 */
+}
