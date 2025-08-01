@@ -52,3 +52,71 @@ except FileNotFoundError:
 
 # Student IDs (assign face ids)
 student_ids = {}
+
+
+def assign_student_id(face_landmarks, student_ids, frame_w, frame_h):
+    key_points = [face_landmarks.landmark[i] for i in [1, 33, 263]]
+    nose_tip = (int(key_points[0].x*frame_w), int(key_points[0].y*frame_h))
+    min_dist = float('inf')
+    min_id = None
+    for s_id, last_pos in student_ids.items():
+        d = np.linalg.norm(np.array(nose_tip) - np.array(last_pos))
+        if d < 50:
+            if d < min_dist:
+                min_dist = d
+                min_id = s_id
+    if min_id is not None:
+        student_ids[min_id] = nose_tip
+        return min_id
+    new_id = str(uuid.uuid4())[:8]
+    student_ids[new_id] = nose_tip
+    return new_id
+
+def get_gaze_direction(iris, eye_corners):
+    eye_left = np.array(eye_corners[0])
+    eye_right = np.array(eye_corners[1])
+    iris = np.array(iris[0])
+    eye_width = np.linalg.norm(eye_right - eye_left)
+    if eye_width == 0: return "unknown"
+    ratio = (iris[0] - eye_left[0]) / eye_width
+    if ratio < 0.35:
+        return "Right"
+    elif ratio > 0.65:
+        return "Left"
+    else:
+        return "Center"
+    
+def estimate_head_pose(landmarks, frame_w, frame_h):
+    image_points = np.array([
+        (landmarks[1][0], landmarks[1][1]),
+        (landmarks[152][0], landmarks[152][1]),
+        (landmarks[263][0], landmarks[263][1]),
+        (landmarks[33][0], landmarks[33][1]),
+        (landmarks[287][0], landmarks[287][1]),
+        (landmarks[57][0], landmarks[57][1])
+    ], dtype="double")
+    model_points = np.array([
+        (0.0, 0.0, 0.0),
+        (0.0, -63.6, -12.5),
+        (-43.3, 32.7, -26.0),
+        (43.3, 32.7, -26.0),
+        (-28.9, -28.9, -24.1),
+        (28.9, -28.9, -24.1)
+    ])
+    focal_length = frame_w
+    center = (frame_w / 2, frame_h / 2)
+    camera_matrix = np.array([
+        [focal_length, 0, center[0]],
+        [0, focal_length, center[1]],
+        [0, 0, 1]
+    ], dtype="double")
+    dist_coeffs = np.zeros((4,1))
+    success, rotation_vector, translation_vector = cv2.solvePnP(model_points, image_points, camera_matrix, dist_coeffs)
+    return rotation_vector
+
+def get_attention_label(gaze, rotation_vector):
+    yaw = rotation_vector[1][0] * (180.0 / np.pi)
+    if abs(yaw) > 25 or gaze in ["Left", "Right"]:
+        return "Not attentive", yaw
+    else:
+        return "Attentive", yaw
