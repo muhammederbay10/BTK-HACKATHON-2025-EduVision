@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useLanguage } from '@/lib/language-context';
 import Link from 'next/link';
 import { 
   UploadIcon, 
@@ -14,26 +15,28 @@ import {
 } from 'lucide-react';
 
 export default function Home() {
+  const { t } = useLanguage();
+  
   const features = [
     {
       icon: VideoIcon,
-      title: 'Video Analysis',
-      description: 'Upload your virtual lesson recordings and get comprehensive engagement insights'
+      title: t('home.features.videoAnalysis.title'),
+      description: t('home.features.videoAnalysis.description')
     },
     {
       icon: BrainIcon,
-      title: 'AI-Powered Insights',
-      description: 'Advanced algorithms analyze student attention patterns and engagement levels'
+      title: t('home.features.aiInsights.title'),
+      description: t('home.features.aiInsights.description')
     },
     {
       icon: TrendingUpIcon,
-      title: 'Performance Metrics',
-      description: 'Track attention trends over time and identify peak engagement moments'
+      title: t('home.features.performanceMetrics.title'),
+      description: t('home.features.performanceMetrics.description')
     },
     {
       icon: UsersIcon,
-      title: 'Student Analytics',
-      description: 'Understand individual and group attention patterns for better teaching'
+      title: t('home.features.studentAnalytics.title'),
+      description: t('home.features.studentAnalytics.description')
     }
   ];
 
@@ -46,29 +49,28 @@ export default function Home() {
         transition={{ duration: 0.8 }}
         className="text-center mb-16"
       >
-        <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-          Transform Your Virtual Teaching
+        <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+          {t('home.title')}
         </h1>
-        <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-          Discover how engaged your students are during virtual lessons. Upload your video recordings 
-          and get actionable insights to improve student attention and learning outcomes.
+        <p className="text-xl text-gray-800 dark:text-gray-200 mb-8 max-w-3xl mx-auto">
+          {t('home.subtitle')}
         </p>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link href="/upload">
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
                 <UploadIcon className="mr-2 h-5 w-5" />
-                Upload Your First Video
+                {t('home.uploadButton')}
               </Button>
             </motion.div>
           </Link>
           
           <Link href="/history">
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button variant="outline" size="lg">
+              <Button variant="outline" size="lg" className="border-blue-600 text-blue-600 hover:bg-blue-50">
                 <BarChart3Icon className="mr-2 h-5 w-5" />
-                View Sample Reports
+                {t('home.sampleReportsButton')}
               </Button>
             </motion.div>
           </Link>
@@ -92,9 +94,9 @@ export default function Home() {
               transition={{ duration: 0.5, delay: 0.1 * index }}
               whileHover={{ y: -5, scale: 1.02 }}
             >
-              <Card className="h-full bg-white/60 backdrop-blur-sm dark:bg-gray-800/60 border-0 shadow-lg">
+              <Card className="h-full bg-white/60 backdrop-blur-sm dark:bg-gray-900/60 border-blue-100 dark:border-blue-800 shadow-lg">
                 <CardHeader className="text-center">
-                  <div className="mx-auto w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center mb-4">
+                  <div className="mx-auto w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mb-4">
                     <Icon className="h-6 w-6 text-white" />
                   </div>
                   <CardTitle className="text-lg">{feature.title}</CardTitle>
@@ -117,11 +119,11 @@ export default function Home() {
         transition={{ duration: 0.8, delay: 0.5 }}
         className="text-center"
       >
-        <Card className="max-w-4xl mx-auto bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-purple-900 border-0 shadow-xl">
+        <Card className="max-w-4xl mx-auto bg-gradient-to-r from-blue-50 to-white dark:from-gray-800 dark:to-gray-900 border-0 shadow-xl">
           <CardHeader>
-            <CardTitle className="text-2xl">Ready to Get Started?</CardTitle>
+            <CardTitle className="text-2xl">{t('home.demo.title')}</CardTitle>
             <CardDescription className="text-lg">
-              See how AttentionLens can help you understand and improve student engagement in your virtual lessons.
+              {t('home.demo.subtitle')}
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
@@ -131,33 +133,33 @@ export default function Home() {
                   1
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-1">Upload Video</h3>
+                  <h3 className="font-semibold mb-1">{t('home.demo.step1.title')}</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Drag and drop your lesson recording
+                    {t('home.demo.step1.description')}
                   </p>
                 </div>
               </div>
               
               <div className="flex items-start space-x-3">
-                <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
                   2
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-1">AI Analysis</h3>
+                  <h3 className="font-semibold mb-1">{t('home.demo.step2.title')}</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Our AI analyzes student engagement
+                    {t('home.demo.step2.description')}
                   </p>
                 </div>
               </div>
               
               <div className="flex items-start space-x-3">
-                <div className="w-8 h-8 bg-pink-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                <div className="w-8 h-8 bg-blue-700 rounded-full flex items-center justify-center text-white font-bold text-sm">
                   3
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-1">Get Insights</h3>
+                  <h3 className="font-semibold mb-1">{t('home.demo.step3.title')}</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Receive actionable feedback and metrics
+                    {t('home.demo.step3.description')}
                   </p>
                 </div>
               </div>

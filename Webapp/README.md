@@ -58,7 +58,6 @@ cd backend
 source venv/bin/activate
 python app/main.py
 ```
-
 The backend API will be available at: `http://localhost:8000`
 - API documentation: `http://localhost:8000/docs`
 
