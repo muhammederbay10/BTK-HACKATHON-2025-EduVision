@@ -8,6 +8,7 @@ import argparse
 from datetime import datetime
 import sys
 import traceback
+import os
 
 mp_face_mesh = mp.solutions.face_mesh
 face_mesh = mp_face_mesh.FaceMesh(
@@ -27,6 +28,8 @@ LEFT_EYE = [33, 133]
 RIGHT_EYE = [362, 263]
 LEFT_IRIS = [468]
 RIGHT_IRIS = [473]
+
+
 
 # CSV Output Setup
 def setup_csv_output(csv_file_path=None):
@@ -92,17 +95,45 @@ def assign_student_id(face_landmarks, student_ids, frame_w, frame_h):
     min_id = None
     for s_id, last_pos in student_ids.items():
         d = np.linalg.norm(np.array(nose_tip) - np.array(last_pos))
-        if d < 50:  # If in a reasonable distance, consider as the same student (tweak as needed)
+        if d < 50:   # If in a reasonable distance, consider as the same student (tweak as needed)
             if d < min_dist:
                 min_dist = d
                 min_id = s_id
     if min_id is not None:
         student_ids[min_id] = nose_tip
-        return min_id
+        return min_id, False   # NOT a new student
     # If new face, assign new ID
     new_id = str(uuid.uuid4())[:8]
     student_ids[new_id] = nose_tip
-    return new_id
+    return new_id, True        # NEW student
+
+
+
+def ensure_photo_dir_exists(photo_dir="photo_id"):
+    if not os.path.exists(photo_dir):
+        os.makedirs(photo_dir)
+    return photo_dir
+
+
+
+def save_face_photo(frame, face_landmarks, frame_w, frame_h, student_id, photo_dir="photo_id"):
+    # Extract all landmark points as pixel coords
+    points = [(int(lm.x * frame_w), int(lm.y * frame_h)) for lm in face_landmarks.landmark]
+    x_vals, y_vals = zip(*points)
+    # Proportional padding
+    min_x, max_x = min(x_vals), max(x_vals)
+    min_y, max_y = min(y_vals), max(y_vals)
+    box_w = max_x - min_x
+    box_h = max_y - min_y
+    pad_w = int(box_w * 0.4)  # 40% padding
+    pad_h = int(box_h * 0.6)  # 60% padding
+    x1 = max(min_x - pad_w, 0)
+    y1 = max(min_y - pad_h, 0)
+    x2 = min(max_x + pad_w, frame_w-1)
+    y2 = min(max_y + pad_h, frame_h-1)
+    face_img = frame[y1:y2, x1:x2]
+    out_path = os.path.join(photo_dir, f"{student_id}.jpg")
+    cv2.imwrite(out_path, face_img)
 
 
 
@@ -249,8 +280,9 @@ def compute_metrics(data):
 
 
 def main():
+    photo_dir = ensure_photo_dir_exists()
     parser = argparse.ArgumentParser(description='Attention Tracker')
-    parser.add_argument('--video_path', type=str, default='../vedio.mp4', help='Path to input video file (default: webcam)')
+    parser.add_argument('--video_path', type=str, default='VIDEO0109.mp4', help='Path to input video file (default: webcam)')
     parser.add_argument('--output_csv', type=str, default='student_attention_log.csv', help='Output CSV file path')
     
     args = parser.parse_args()
@@ -290,8 +322,10 @@ def main():
             row_data = []
             if results.multi_face_landmarks:
                 for face_landmarks in results.multi_face_landmarks:
-                    # Assign ID
-                    s_id = assign_student_id(face_landmarks, student_ids, w, h)
+                    # Assign ID & store photo ID for new student IDs
+                    s_id, is_new = assign_student_id(face_landmarks, student_ids, w, h)
+                    if is_new:
+                        save_face_photo(frame, face_landmarks, w, h, s_id, photo_dir=photo_dir)
                     # Landmarks extraction
                     landmarks = {}
                     for i, lm in enumerate(face_landmarks.landmark):
