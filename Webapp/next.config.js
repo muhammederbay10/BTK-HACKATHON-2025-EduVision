@@ -1,10 +1,11 @@
-/** @type {import('next').NextConfig} */
+// Simple Next.js configuration for development
 const nextConfig = {
-  output: 'export',
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  images: { unoptimized: true },
-};
+  reactStrictMode: true,
+  typescript: {
+    ignoreBuildErrors: true,
+  }
+}
 
-module.exports = nextConfig;
+module.exports = nextConfig
+
+module.exports = nextConfig

@@ -1,0 +1,266 @@
+"use client";
+
+import { useRouter } from 'next/navigation';
+import { useEffect, useState, useCallback } from 'react';
+import { motion } from 'framer-motion';
+import { Card, CardContent } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
+import { Loader2Icon, AlertCircleIcon, CheckCircleIcon } from 'lucide-react';
+import SuccessPage from '@/app/components/SuccessPage';
+import { isReportComplete, pollUntilComplete } from '@/app/utils/reportStatus';
+
+interface Props {
+  reportId: string;
+}
+
+export default function ProcessingPage({ reportId }: Props) {
+  const [status, setStatus] = useState<'pending' | 'processing' | 'completed' | 'error'>('pending');
+  const [progress, setProgress] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [pollAttempts, setPollAttempts] = useState(0);
+  const router = useRouter();
+
+  // Function to check if report exists directly
+  const checkReportExists = useCallback(async () => {
+    try {
+      console.log("Checking if report exists directly for:", reportId);
+      const isComplete = await isReportComplete(reportId);
+      
+      if (isComplete) {
+        console.log("Report exists! Setting status to completed");
+        setStatus('completed');
+        setProgress(100);
+        setTimeout(() => setShowSuccess(true), 1000);
+        return true;
+      }
+    } catch (err) {
+      console.log("Error checking report existence:", err);
+    }
+    return false;
+  }, [reportId]);
+
+  useEffect(() => {
+    // Don't try to fetch during static build/export
+    if (reportId === 'placeholder') {
+      return;
+    }
+    
+    console.log("Starting processing for reportId:", reportId);
+    
+    // Use our utility to poll until the report is ready
+    const cancelPolling = pollUntilComplete(reportId, () => {
+      console.log("Report is complete (from utility)");
+      setStatus('completed');
+      setProgress(100);
+      setTimeout(() => setShowSuccess(true), 1000);
+    }, 60, 2000);
+    
+    // After a certain amount of time, assume processing might be complete
+    const assumeCompletionTimeout = setTimeout(() => {
+      console.log("Auto-checking if report exists after timeout...");
+      checkReportExists();
+    }, 15000);
+    
+    // Simulate progress even when waiting for backend
+    const progressInterval = setInterval(() => {
+      setProgress((prev) => {
+        // Don't go to 100% until we know processing is complete
+        if (status === 'completed') return 100;
+        if (prev >= 95) return 95;
+        
+        // After many polling attempts, speed up the progress
+        if (pollAttempts > 10) {
+          return prev + Math.random() * 5; // Move faster
+        }
+        return prev + Math.random() * 2;
+      });
+    }, 1000);
+
+    // Poll for status
+    const statusInterval = setInterval(async () => {
+      try {
+        setPollAttempts(prev => prev + 1);
+        console.log(`Polling status for reportId: ${reportId} (attempt ${pollAttempts + 1})`);
+        
+        // First try direct report check
+        const reportExists = await checkReportExists();
+        if (reportExists) {
+          clearInterval(statusInterval);
+          clearInterval(progressInterval);
+          return;
+        }
+        
+        // Regular status check
+        const response = await fetch(`http://localhost:8000/api/status/${reportId}`);
+        
+        if (!response.ok) {
+          console.error("Status check failed:", response.status, response.statusText);
+          
+          // If we've been polling for a while and the backend might have completed,
+          // don't error out, just keep trying
+          if (pollAttempts > 5) {
+            console.log("Many polling attempts, continuing despite error");
+            return;
+          }
+          
+          setError(`Failed to fetch processing status: ${response.status}`);
+          return;
+        }
+        
+        const data = await response.json();
+        console.log("Status response:", data);
+        setStatus(data.status);
+        
+        if (data.status === 'completed') {
+          console.log("Status endpoint confirms processing is complete!");
+          clearInterval(statusInterval);
+          clearInterval(progressInterval);
+          setProgress(100);
+          
+          // Show success page instead of redirecting immediately
+          setTimeout(() => {
+            setShowSuccess(true);
+          }, 1000);
+        } else if (data.status === 'error') {
+          clearInterval(statusInterval);
+          clearInterval(progressInterval);
+          setError('An error occurred during processing');
+        }
+        
+        // After a certain number of polling attempts, if we're still processing,
+        // let's check the report directly again
+        if (pollAttempts > 5 && pollAttempts % 3 === 0) {
+          checkReportExists();
+        }
+      } catch (err) {
+        console.error('Error fetching status:', err);
+        // Don't stop polling on network errors, try again later
+      }
+    }, 3000); // Poll every 3 seconds
+
+    return () => {
+      clearInterval(progressInterval);
+      clearInterval(statusInterval);
+      clearTimeout(assumeCompletionTimeout);
+      cancelPolling();
+    };
+  }, [reportId, status, pollAttempts, checkReportExists]);
+
+  const getStatusText = () => {
+    switch (status) {
+      case 'pending':
+        return 'Preparing to process your video...';
+      case 'processing':
+        return 'Analyzing your video for engagement metrics...';
+      case 'completed':
+        return 'Processing complete!';
+      case 'error':
+        return 'There was a problem processing your video.';
+      default:
+        return 'Processing your video...';
+    }
+  };
+
+  // Show success page when processing is complete
+  if (showSuccess) {
+    return <SuccessPage 
+      reportId={reportId} 
+      message="Your video has been successfully analyzed. View your engagement report now!"
+    />;
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-16">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="max-w-2xl mx-auto"
+      >
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Processing Your Video
+          </h1>
+          <p className="text-gray-600 dark:text-gray-300">
+            Please wait while we analyze your video for engagement metrics
+          </p>
+        </div>
+
+        <Card className="bg-white/60 backdrop-blur-sm dark:bg-gray-800/60 border-0 shadow-xl">
+          <CardContent className="pt-6">
+            {error ? (
+              <div className="text-center py-8">
+                <AlertCircleIcon className="h-16 w-16 text-red-500 mx-auto mb-4" />
+                <h2 className="text-2xl font-bold mb-2">Processing Failed</h2>
+                <p className="text-gray-600 dark:text-gray-300 mb-6">{error}</p>
+                <Button 
+                  onClick={() => router.push('/upload')}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                >
+                  Try Again
+                </Button>
+              </div>
+            ) : status === 'completed' ? (
+              <div className="text-center py-8">
+                <CheckCircleIcon className="h-16 w-16 text-green-500 mx-auto mb-4" />
+                <h2 className="text-2xl font-bold mb-2">Processing Complete!</h2>
+                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                  Your report is ready!
+                </p>
+                <Progress value={100} className="h-2 mb-4" />
+                <Button
+                  onClick={() => router.push(`/report/${reportId}`)}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                >
+                  View Report
+                </Button>
+              </div>
+            ) : (
+              <div className="py-8">
+                <div className="flex justify-center mb-8">
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-xl font-bold">{Math.round(progress)}%</span>
+                    </div>
+                    <Loader2Icon className="h-24 w-24 text-blue-500 animate-spin opacity-25" />
+                  </div>
+                </div>
+                
+                <h2 className="text-xl font-medium text-center mb-6">{getStatusText()}</h2>
+                
+                <div className="space-y-4">
+                  <Progress value={progress} className="h-2" />
+                  
+                  <div className="flex justify-between text-sm text-gray-500">
+                    <span>Report ID: {reportId}</span>
+                    <span>Status: {status}</span>
+                  </div>
+                  
+                  {progress > 40 && (
+                    <div className="text-center mt-6">
+                      <p className="text-sm text-gray-500 mb-2">
+                        Taking longer than expected?
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          console.log("Manual check for report");
+                          checkReportExists();
+                        }}
+                      >
+                        Check If Report Is Ready
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
+    </div>
+  );
+}

@@ -67,8 +67,51 @@ export default function UploadPage() {
     }, 3000);
   };
 
-  const startProcessing = () => {
-    router.push(`/processing/${reportId}`);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingError, setProcessingError] = useState<string | null>(null);
+  
+  const startProcessing = async () => {
+    if (!uploadedFile) {
+      console.error('No file uploaded');
+      return;
+    }
+    
+    setIsProcessing(true);
+    setProcessingError(null);
+    
+    try {
+      // Create FormData to upload the file
+      const formData = new FormData();
+      formData.append('file', uploadedFile);
+
+      console.log("Starting upload and processing...");
+      
+      // Upload file and start processing
+      const response = await fetch('http://localhost:8000/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Upload failed with status ${response.status}: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log("Upload successful, received reportId:", result.reportId);
+      
+      const actualReportId = result.reportId;
+
+      // Short delay to ensure backend has started processing
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Navigate to processing page with actual report ID
+      console.log("Redirecting to processing page...");
+      router.push(`/processing/${actualReportId}`);
+    } catch (error: any) {
+      console.error('Error uploading file:', error);
+      setProcessingError(error?.message || 'Failed to upload file');
+      setIsProcessing(false);
+    }
   };
 
   const formatFileSize = (bytes: number) => {
@@ -116,33 +159,34 @@ export default function UploadPage() {
                 </CardHeader>
                 <CardContent>
                   {!isUploading ? (
-                    <motion.div
-                      {...getRootProps()}
-                      className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all ${
-                        isDragActive
-                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                          : 'border-gray-300 dark:border-gray-600 hover:border-blue-400'
-                      }`}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <input {...getInputProps()} />
-                      <FileVideoIcon className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                      
-                      {isDragActive ? (
-                        <p className="text-blue-600 font-medium">Drop your video here!</p>
-                      ) : (
-                        <div>
-                          <p className="text-lg font-medium mb-2">
-                            Drag and drop your video here
-                          </p>
-                          <p className="text-gray-500 mb-4">or click to browse files</p>
-                          <Button variant="outline">
-                            Choose File
-                          </Button>
-                        </div>
-                      )}
-                    </motion.div>
+                    <div {...getRootProps()}>
+                      <motion.div
+                        className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all ${
+                          isDragActive
+                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                            : 'border-gray-300 dark:border-gray-600 hover:border-blue-400'
+                        }`}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <input {...getInputProps()} />
+                        <FileVideoIcon className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                        
+                        {isDragActive ? (
+                          <p className="text-blue-600 font-medium">Drop your video here!</p>
+                        ) : (
+                          <div>
+                            <p className="text-lg font-medium mb-2">
+                              Drag and drop your video here
+                            </p>
+                            <p className="text-gray-500 mb-4">or click to browse files</p>
+                            <Button variant="outline">
+                              Choose File
+                            </Button>
+                          </div>
+                        )}
+                      </motion.div>
+                    </div>
                   ) : (
                     <div className="space-y-4">
                       <div className="flex items-center space-x-3">
@@ -214,7 +258,7 @@ export default function UploadPage() {
                   
                   <h2 className="text-2xl font-bold mb-2">Upload Successful!</h2>
                   <p className="text-gray-600 dark:text-gray-300 mb-6">
-                    Your video has been uploaded successfully. We'll now analyze it to generate your engagement report.
+                    Your video has been uploaded successfully.ll now analyze it to generate your engagement report.
                   </p>
                   
                   <div className="bg-white/60 dark:bg-gray-800/60 rounded-lg p-4 mb-6">
@@ -229,11 +273,31 @@ export default function UploadPage() {
                     </div>
                   </div>
                   
+                  {processingError && (
+                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-3 rounded-lg mb-4 text-left">
+                      <p className="text-sm font-medium text-red-800 dark:text-red-200">
+                        Error: {processingError}
+                      </p>
+                    </div>
+                  )}
+                  
                   <Button 
                     onClick={startProcessing}
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                    disabled={isProcessing}
+                    className={`relative ${
+                      isProcessing 
+                        ? "bg-gray-400" 
+                        : "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                    }`}
                   >
-                    Start Analysis
+                    {isProcessing ? (
+                      <>
+                        <span className="animate-spin inline-block mr-2">◌</span>
+                        Processing...
+                      </>
+                    ) : (
+                      "Start Analysis"
+                    )}
                   </Button>
                 </CardContent>
               </Card>
