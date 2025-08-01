@@ -19,7 +19,7 @@ face_mesh = mp_face_mesh.FaceMesh(
     min_tracking_confidence=0.5
 )
 
-# Drawing utilities (optional)
+# Drawing utilities 
 mp_drawing = mp.solutions.drawing_utils
 draw_spec = mp_drawing.DrawingSpec(thickness=1, circle_radius=1)
 
@@ -279,6 +279,7 @@ def update_student_metrics(student_id, attention, timestamp):
             data["distraction_events"] += 1
         data["was_attentive"] = False
     data["last_frame_time"] = timestamp
+    
     # (yawning count and eye closure can be implemented later)
     # Placeholder: focus quality etc
     return data
