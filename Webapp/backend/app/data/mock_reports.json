@@ -1,0 +1,26 @@
+{
+  "demo-1": {
+    "id": "demo-1",
+    "filename": "math_lesson_intro.mp4",
+    "upload_time": "2024-01-15T10:30:00",
+    "average_attention": 0.76,
+    "duration": "12:45",
+    "status": "completed"
+  },
+  "demo-2": {
+    "id": "demo-2",
+    "filename": "physics_experiment.mp4", 
+    "upload_time": "2024-01-14T14:20:00",
+    "average_attention": 0.82,
+    "duration": "18:20",
+    "status": "completed"
+  },
+  "demo-3": {
+    "id": "demo-3",
+    "filename": "history_discussion.mp4",
+    "upload_time": "2024-01-12T09:15:00", 
+    "average_attention": 0.68,
+    "duration": "25:10",
+    "status": "completed"
+  }
+}
