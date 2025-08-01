@@ -8,7 +8,10 @@ import argparse
 from datetime import datetime
 import sys
 import traceback
+<<<<<<< HEAD
 import os
+=======
+>>>>>>> 5823334 (Add CLI support, refactor CSV logic, and improve error handling)
 
 mp_face_mesh = mp.solutions.face_mesh
 face_mesh = mp_face_mesh.FaceMesh(
@@ -58,6 +61,7 @@ def setup_csv_output(csv_file_path=None):
         frame_idx = 0
     
     return csv_file_path, FIELDNAMES, frame_idx
+<<<<<<< HEAD
 
 # Handle output path
 def handle_output_path(output_path):
@@ -78,6 +82,8 @@ def handle_output_path(output_path):
         os.makedirs(output_dir, exist_ok=True)
         
     return output_path
+=======
+>>>>>>> 5823334 (Add CLI support, refactor CSV logic, and improve error handling)
 
 # Student IDs (assign face ids)
 student_ids = {}
@@ -192,7 +198,10 @@ def main():
     
     # Setup CSV output
     csv_file_path, fieldnames, frame_idx = setup_csv_output(args.output_csv)
+<<<<<<< HEAD
     csv_file_path = handle_output_path(csv_file_path)
+=======
+>>>>>>> 5823334 (Add CLI support, refactor CSV logic, and improve error handling)
     
     # Setup video capture
     if args.video_path:
