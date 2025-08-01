@@ -4,13 +4,16 @@ import numpy as np
 import pandas as pd
 import time
 import uuid
+import argparse
 from datetime import datetime
+import sys
+import traceback
 
 mp_face_mesh = mp.solutions.face_mesh
 face_mesh = mp_face_mesh.FaceMesh(
     static_image_mode=False,
     max_num_faces=5,
-    refine_landmarks=True,
+    refine_landmarks=False,
     min_detection_confidence=0.5,
     min_tracking_confidence=0.5
 )
@@ -26,29 +29,34 @@ LEFT_IRIS = [468]
 RIGHT_IRIS = [473]
 
 # CSV Output Setup
-CSV_FILE = "student_attention_log.csv"
-FIELDNAMES = [
-    "student_id", 
-    "timestamp", 
-    "frame_idx", 
-    "attention_status", 
-    "gaze", 
-    "yaw_angle_deg", 
-    "attention_score", 
-    "distraction_events", 
-    "yawning_count", 
-    "eye_closure_duration_sec", 
-    "focus_quality", 
-    "session_duration_minutes"
-]
-
-# Start/Resume CSV
-try:
-    df = pd.read_csv(CSV_FILE)
-    frame_idx = len(df)
-except FileNotFoundError:
-    df = pd.DataFrame(columns=FIELDNAMES)
-    frame_idx = 0
+def setup_csv_output(csv_file_path=None):
+    if csv_file_path is None:
+        csv_file_path = "student_attention_log.csv"
+    
+    FIELDNAMES = [
+        "student_id", 
+        "timestamp", 
+        "frame_idx", 
+        "attention_status", 
+        "gaze", 
+        "yaw_angle_deg", 
+        "attention_score", 
+        "distraction_events", 
+        "yawning_count", 
+        "eye_closure_duration_sec", 
+        "focus_quality", 
+        "session_duration_minutes"
+    ]
+    
+    # Start/Resume CSV
+    try:
+        df = pd.read_csv(csv_file_path)
+        frame_idx = len(df)
+    except FileNotFoundError:
+        df = pd.DataFrame(columns=FIELDNAMES)
+        frame_idx = 0
+    
+    return csv_file_path, FIELDNAMES, frame_idx
 
 # Student IDs (assign face ids)
 student_ids = {}
@@ -154,82 +162,118 @@ def compute_metrics(data):
     distraction_rate = data["distraction_events"] / session_duration if session_duration > 0 else 0
     return attention_score, data["distraction_events"], data["yawning_count"], data["eye_closure_duration_sec"], session_duration, distraction_rate
 
-cap = cv2.VideoCapture(0)
-print("Running... Press 'q' to quit.")
+def main():
+    parser = argparse.ArgumentParser(description='Attention Tracker')
+    parser.add_argument('--video_path', type=str, default='../vedio.mp4', help='Path to input video file (default: webcam)')
+    parser.add_argument('--output_csv', type=str, default='student_attention_log.csv', help='Output CSV file path')
+    
+    args = parser.parse_args()
+    
+    # Setup CSV output
+    csv_file_path, fieldnames, frame_idx = setup_csv_output(args.output_csv)
+    
+    # Setup video capture
+    if args.video_path:
+        cap = cv2.VideoCapture(args.video_path)
+        print(f"Processing video: {args.video_path}")
+    else:
+        cap = cv2.VideoCapture(0)
+        print("Running live webcam... Press 'q' to quit.")
 
-while cap.isOpened():
-    success, frame = cap.read()
-    if not success:
-        print("Failed to grab frame.")
-        break
-    frame = cv2.flip(frame, 1)
-    h, w, _ = frame.shape
-    rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    results = face_mesh.process(rgb)
-    now = time.time()
-    timestamp = datetime.now().isoformat()
-    # Every frame's data will be appended to CSV using pandas
-    row_data = []
-    if results.multi_face_landmarks:
-        for face_landmarks in results.multi_face_landmarks:
-            # Assign ID
-            s_id = assign_student_id(face_landmarks, student_ids, w, h)
-            # Landmarks extraction
-            landmarks = {}
-            for i, lm in enumerate(face_landmarks.landmark):
-                x, y = int(lm.x * w), int(lm.y * h)
-                landmarks[i] = (x, y)
-            # Gaze
-            if all(i in landmarks for i in LEFT_IRIS + LEFT_EYE):
-                left_iris = [landmarks[i] for i in LEFT_IRIS]
-                left_eye = [landmarks[i] for i in LEFT_EYE]
-                gaze = get_gaze_direction(left_iris, left_eye)
-            else:
-                gaze = "unknown"
-            # Head pose
-            try:
-                rot_vec = estimate_head_pose(landmarks, w, h)
-            except:
-                continue  # Skip if can't estimate
-            attention, yaw_angle = get_attention_label(gaze, rot_vec)
-            # Update student data
-            metrics = update_student_metrics(s_id, attention, now)
-            # CSV metrics
-            a_score, distraction_events, yawning_count, closure_dur, session_duration, distraction_rate = compute_metrics(metrics)
-            # Placeholder for focus quality
-            focus_quality = ""
-            # Append to per-frame record
-            row_data.append({
-                "student_id": s_id,
-                "timestamp": timestamp,
-                "frame_idx": frame_idx,
-                "attention_status": attention,
-                "gaze": gaze,
-                "yaw_angle_deg": yaw_angle,
-                "attention_score": round(a_score,1),
-                "distraction_events": distraction_events,
-                "yawning_count": yawning_count,
-                "eye_closure_duration_sec": closure_dur,
-                "focus_quality": focus_quality,
-                "session_duration_minutes": round(session_duration,2)
-            })
-            # Drawings
-            x, y = landmarks[1]
-            cv2.putText(frame, f"ID:{s_id[:4]}", (x-30, y-45), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,128,255), 1)
-            cv2.putText(frame, f"Gaze:{gaze}", (x-30, y-30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 1)
-            cv2.putText(frame, f"Status:{attention}", (x-30, y-15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255) if attention=="Not attentive" else (0,255,0), 1)
-            cv2.circle(frame, (x, y), 3, (255,0,0), -1)
-            # mp_drawing.draw_landmarks(frame, face_landmarks, mp_face_mesh.FACEMESH_CONTOURS, draw_spec, draw_spec)
-    # -------------------
-    # Per-frame CSV write to make it robust to interruption
-    if row_data:
-        new_df = pd.DataFrame(row_data)
-        new_df.to_csv(CSV_FILE, index=False, mode='a', header=not bool(frame_idx))
-        frame_idx += 1
-    # Show window
-    cv2.imshow('Multi-Person Attention Tracker', frame)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+    if not cap.isOpened():
+        print("Error: Could not open video source", file=sys.stderr)
+        sys.exit(1)
 
-cap.release()
-cv2.destroyAllWindows()
+    try:
+        while cap.isOpened():
+            success, frame = cap.read()
+            if not success:
+                print("Failed to grab frame or reached end of video.")
+                break
+                
+            if not args.video_path:  # Only flip for webcam
+                frame = cv2.flip(frame, 1)
+                
+            h, w, _ = frame.shape
+            rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            results = face_mesh.process(rgb)
+            now = time.time()
+            timestamp = datetime.now().isoformat()
+            
+            # Every frame's data will be appended to CSV using pandas
+            row_data = []
+            if results.multi_face_landmarks:
+                for face_landmarks in results.multi_face_landmarks:
+                    # Assign ID
+                    s_id = assign_student_id(face_landmarks, student_ids, w, h)
+                    # Landmarks extraction
+                    landmarks = {}
+                    for i, lm in enumerate(face_landmarks.landmark):
+                        x, y = int(lm.x * w), int(lm.y * h)
+                        landmarks[i] = (x, y)
+                    # Gaze
+                    if all(i in landmarks for i in LEFT_IRIS + LEFT_EYE):
+                        left_iris = [landmarks[i] for i in LEFT_IRIS]
+                        left_eye = [landmarks[i] for i in LEFT_EYE]
+                        gaze = get_gaze_direction(left_iris, left_eye)
+                    else:
+                        gaze = "unknown"
+                    # Head pose
+                    try:
+                        rot_vec = estimate_head_pose(landmarks, w, h)
+                    except:
+                        continue  # Skip if can't estimate
+                    attention, yaw_angle = get_attention_label(gaze, rot_vec)
+                    # Update student data
+                    metrics = update_student_metrics(s_id, attention, now)
+                    # CSV metrics
+                    a_score, distraction_events, yawning_count, closure_dur, session_duration, distraction_rate = compute_metrics(metrics)
+                    # Placeholder for focus quality
+                    focus_quality = ""
+                    # Append to per-frame record
+                    row_data.append({
+                        "student_id": s_id,
+                        "timestamp": timestamp,
+                        "frame_idx": frame_idx,
+                        "attention_status": attention,
+                        "gaze": gaze,
+                        "yaw_angle_deg": yaw_angle,
+                        "attention_score": round(a_score,1),
+                        "distraction_events": distraction_events,
+                        "yawning_count": yawning_count,
+                        "eye_closure_duration_sec": closure_dur,
+                        "focus_quality": focus_quality,
+                        "session_duration_minutes": round(session_duration,2)
+                    })
+                    # Drawings
+                    x, y = landmarks[1]
+                    cv2.putText(frame, f"ID:{s_id[:4]}", (x-30, y-45), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,128,255), 1)
+                    cv2.putText(frame, f"Gaze:{gaze}", (x-30, y-30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 1)
+                    cv2.putText(frame, f"Status:{attention}", (x-30, y-15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255) if attention=="Not attentive" else (0,255,0), 1)
+                    cv2.circle(frame, (x, y), 3, (255,0,0), -1)
+            
+            # Per-frame CSV write to make it robust to interruption
+            if row_data:
+                new_df = pd.DataFrame(row_data)
+                new_df.to_csv(csv_file_path, index=False, mode='a', header=not bool(frame_idx))
+                frame_idx += 1
+            
+            # Show window only for webcam mode
+            if not args.video_path:
+                cv2.imshow('Multi-Person Attention Tracker', frame)
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+    except Exception as e:
+        print(f"\n--- An error occurred in attention_tracker.py ---", file=sys.stderr)
+        print(f"ERROR: {e}", file=sys.stderr)
+        print("\n--- Traceback ---", file=sys.stderr)
+        traceback.print_exc(file=sys.stderr)
+        sys.exit(1)
+
+
+    cap.release()
+    cv2.destroyAllWindows()
+    print(f"Analysis complete. Results saved to: {csv_file_path}")
+
+if __name__ == "__main__":
+    main()
