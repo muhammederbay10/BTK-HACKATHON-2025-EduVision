@@ -184,13 +184,16 @@ class EduVisionClassroomProcessor:
                         filename = f"classroom_{course_name.replace(' ', '_')}_{timestamp}.json"
                         filepath = os.path.join('reports', filename)
                         
-                        # Create structured JSON report with proper type conversion
+                        # Parse the AI report into structured sections
+                        parsed_sections = self._parse_ai_report_to_sections(classroom_result['raw_ai_report'])
+                        
+                        # Create structured JSON report with parsed sections
                         json_report = {
                             "report_metadata": {
                                 "report_type": "EduVision Classroom Analysis",
                                 "course_name": course_name,
                                 "date": classroom_result['class_info']['date'],
-                                "session_time": str(classroom_result['class_info']['session_time']),  # Convert to string
+                                "session_time": str(classroom_result['class_info']['session_time']),
                                 "students_analyzed": classroom_result['student_count'],
                                 "generated_at": datetime.now().isoformat(),
                                 "processing_time": classroom_result['processing_time']
@@ -200,15 +203,12 @@ class EduVisionClassroomProcessor:
                                 "student_list": []
                             },
                             "ai_analysis": {
-                                "raw_report": classroom_result['raw_ai_report'],
-                                "report_length": len(classroom_result['raw_ai_report'])
-                            },
-                            "formatted_sections": {
-                                "classroom_overview": classroom_result['formatted_report'].get('classroom_overview', 'Not available'),
-                                "individual_analysis": classroom_result['formatted_report'].get('individual_analysis', 'Not available'),
-                                "engagement_patterns": classroom_result['formatted_report'].get('engagement_patterns', 'Not available'),
-                                "recommendations": classroom_result['formatted_report'].get('recommendations', 'Not available'),
-                                "intervention_priorities": classroom_result['formatted_report'].get('intervention_priorities', 'Not available')
+                                "executive_summary": parsed_sections.get('executive_summary', 'Not available'),
+                                "individual_student_analysis": parsed_sections.get('individual_analysis', 'Not available'),
+                                "temporal_analysis": parsed_sections.get('temporal_analysis', 'Not available'),
+                                "classroom_dynamics": parsed_sections.get('classroom_dynamics', 'Not available'),
+                                "actionable_recommendations": parsed_sections.get('recommendations', 'Not available'),
+                                "metrics_summary": parsed_sections.get('metrics_summary', 'Not available')
                             },
                             "data_insights": {
                                 "average_attention_score": round(sum(s['overall_attention_score'] for s in students_data) / len(students_data), 2),
@@ -231,7 +231,7 @@ class EduVisionClassroomProcessor:
                                 "overall_attention_score": student['overall_attention_score'],
                                 "total_distractions": student['total_distractions'],
                                 "session_duration_minutes": student['total_session_minutes'],
-                                "session_time": str(student.get('session_time', 'Unknown'))  # Convert timestamp to string
+                                "session_time": str(student.get('session_time', 'Unknown'))
                             }
                             json_report["student_summary"]["student_list"].append(student_entry)
                         
@@ -262,6 +262,75 @@ class EduVisionClassroomProcessor:
             self.logger.error(error_msg)
             raise
 
+    def _parse_ai_report_to_sections(self, raw_report: str) -> dict:
+        """
+        Parse the raw AI report into structured sections.
+        
+        Args:
+            raw_report (str): The raw AI-generated report
+            
+        Returns:
+            dict: Parsed sections
+        """
+        try:
+            sections = {}
+            lines = raw_report.split('\n')
+            current_section = None
+            current_content = []
+            
+            # Define section mappings
+            section_headers = {
+                'executive_summary': ['1. EXECUTIVE SUMMARY', 'EXECUTIVE SUMMARY'],
+                'individual_analysis': ['2. INDIVIDUAL STUDENT ANALYSIS', 'INDIVIDUAL STUDENT ANALYSIS'],
+                'temporal_analysis': ['3. TEMPORAL ANALYSIS', 'TEMPORAL ANALYSIS'],
+                'classroom_dynamics': ['4. CLASSROOM DYNAMICS', 'CLASSROOM DYNAMICS'],
+                'recommendations': ['5. ACTIONABLE RECOMMENDATIONS', 'ACTIONABLE RECOMMENDATIONS'],
+                'metrics_summary': ['6. METRICS SUMMARY', 'METRICS SUMMARY']
+            }
+            
+            for line in lines:
+                line_clean = line.strip()
+                
+                # Check if this line is a section header
+                found_section = None
+                for section_key, headers in section_headers.items():
+                    for header in headers:
+                        if header in line_clean and line_clean.startswith('**'):
+                            found_section = section_key
+                            break
+                    if found_section:
+                        break
+                
+                if found_section:
+                    # Save previous section if exists
+                    if current_section and current_content:
+                        sections[current_section] = '\n'.join(current_content).strip()
+                    
+                    # Start new section
+                    current_section = found_section
+                    current_content = []
+                else:
+                    # Add content to current section (skip header lines)
+                    if current_section and line_clean and not line_clean.startswith('**'):
+                        current_content.append(line)
+            
+            # Save the last section
+            if current_section and current_content:
+                sections[current_section] = '\n'.join(current_content).strip()
+            
+            return sections
+            
+        except Exception as e:
+            self.logger.error(f"Error parsing AI report: {str(e)}")
+            return {
+                'executive_summary': raw_report,
+                'individual_analysis': 'Parsing failed - see executive summary',
+                'temporal_analysis': 'Parsing failed - see executive summary',
+                'classroom_dynamics': 'Parsing failed - see executive summary',
+                'recommendations': 'Parsing failed - see executive summary',
+                'metrics_summary': 'Parsing failed - see executive summary'
+            }
+        
     def _generate_summary_report_json(self, results: dict, csv_file_path: str):
         """
         Generate a summary report in JSON format.
@@ -318,7 +387,7 @@ class EduVisionClassroomProcessor:
                 json.dump(summary_json, f, indent=2, ensure_ascii=False)
             
             self.logger.info(f"📋 Summary JSON report saved: {summary_filename}")
-            
+        
         except Exception as e:
             self.logger.error(f"Error generating JSON summary report: {str(e)}")
 
