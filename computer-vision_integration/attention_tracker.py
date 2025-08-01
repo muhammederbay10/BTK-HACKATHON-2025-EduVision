@@ -256,7 +256,7 @@ def update_student_metrics(student_id, attention, timestamp):
             data["distraction_events"] += 1
         data["was_attentive"] = False
     data["last_frame_time"] = timestamp
-    
+
     # (yawning count and eye closure can be implemented later)
     # Placeholder: focus quality etc
     return data
@@ -283,7 +283,7 @@ def compute_metrics(data):
 def main():
     photo_dir = ensure_photo_dir_exists()
     parser = argparse.ArgumentParser(description='Attention Tracker')
-    parser.add_argument('--video_path', type=str, default='VIDEO0109.mp4', help='Path to input video file (default: webcam)')
+    parser.add_argument('--video_path', type=str, default='test_video.mp4', help='Path to input video file (default: webcam)')
     parser.add_argument('--output_csv', type=str, default='student_attention_log.csv', help='Output CSV file path')
     
     args = parser.parse_args()
