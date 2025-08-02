@@ -52,4 +52,11 @@ tmp/
 
 vedio.mp4
 
+__pycache__/
+logs/
 reports/
+.env
+config.py
+.vscode/
+*.csv
+
