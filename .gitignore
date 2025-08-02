@@ -49,3 +49,7 @@ yarn-error.log*
 *.log
 temp/
 tmp/
+
+vedio.mp4
+
+reports/

@@ -5,8 +5,8 @@ import sys
 import uuid
 import json
 import asyncio
-from fastapi import FastAPI, File, UploadFile, HTTPException, Query
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, File, UploadFile, HTTPException, Query # type: ignore
+from fastapi.middleware.cors import CORSMiddleware # type: ignore
 import threading
 
 app = FastAPI()
@@ -263,5 +263,5 @@ async def get_report(report_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
-    import uvicorn
+    import uvicorn # type: ignore
     uvicorn.run(app, host="0.0.0.0", port=8000)
