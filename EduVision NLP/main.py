@@ -393,20 +393,25 @@ class EduVisionClassroomProcessor:
 
 def main():
     """Main function to run the EduVision classroom processor."""
+    import argparse
+    
+    parser = argparse.ArgumentParser(description='EduVision Classroom Report Processor')
+    parser.add_argument('--csv_path', type=str, help='Path to the CSV file to process')
+    parser.add_argument('--course_name', type=str, default='Unknown_Course', help='Name of the course')
+    
+    args = parser.parse_args()
+    
     print("🚀 EduVision Classroom Report Processor")
     print("="*60)
     
     processor = EduVisionClassroomProcessor()
     
     # Get CSV file path
-    csv_file_path = input("Enter path to CSV file (or press Enter for example): ").strip()
+    csv_file_path = args.csv_path
     
     if not csv_file_path:
-        csv_file_path = 'EduVision NLP/data/student_attention_log2.csv'
-        if not os.path.exists(csv_file_path):
-            print("Creating example CSV file...")
-            csv_file_path = processor.csv_loader.create_example_csv()
-        print(f"Using example CSV: {csv_file_path}")
+        print("❌ No CSV file path provided. Use --csv_path to specify the file.")
+        return
     
     try:
         # Test Gemini connection first
