@@ -168,7 +168,7 @@ export default function ProcessingPage({ reportId }: Props) {
         setConnectionIssue(true);
         // Don't stop polling on network errors, try again later
       }
-    }, 3000); // Poll every 3 seconds
+    }, 6000); // Poll every 3 seconds
 
     return () => {
       clearInterval(progressInterval);

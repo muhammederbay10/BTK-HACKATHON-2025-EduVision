@@ -1,0 +1,196 @@
+import os
+import sys
+import json
+import datetime
+import threading
+
+# Import needed for type annotations
+from typing import Dict, Any
+
+# Add project root and module paths to Python path
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+cv_module_path = os.path.join(project_root, "computer-vision_integration")
+nlp_module_path = os.path.join(project_root, "EduVision_NLP")
+
+# Make sure the paths exist in Python's search path
+if cv_module_path not in sys.path:
+    sys.path.insert(0, cv_module_path)
+if nlp_module_path not in sys.path:
+    sys.path.insert(0, nlp_module_path)
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+# Import the required modules directly with their full file paths
+import importlib.util
+import importlib.machinery
+
+# Load attention_tracker
+attention_tracker_path = os.path.join(cv_module_path, "attention_tracker.py")
+loader = importlib.machinery.SourceFileLoader("attention_tracker", attention_tracker_path)
+attention_tracker = loader.load_module()
+attention_tracker_main = attention_tracker.main
+
+# Load EduVisionClassroomProcessor 
+nlp_main_path = os.path.join(nlp_module_path, "main.py")
+loader = importlib.machinery.SourceFileLoader("nlp_main", nlp_main_path)
+nlp_main = loader.load_module()
+EduVisionClassroomProcessor = nlp_main.EduVisionClassroomProcessor
+
+# Dictionary to store processing status
+processing_status: Dict[str, str] = {}
+
+def process_video_task(video_id: str, video_path: str, upload_dir: str) -> None:
+    """Process video in a separate thread"""
+    try:
+        processing_status[video_id] = "processing"
+        # Always use .csv extension
+        csv_path = os.path.join(upload_dir, f"{video_id}.csv")
+        report_path = os.path.join(upload_dir, f"{video_id}.json")
+        
+        print(f"Processing video {video_id} in background thread")
+        
+        # Process video directly using attention_tracker module
+        print(f"Running computer vision processing on {video_path}")
+        print(f"Output CSV: {csv_path}")
+        
+        # Save original sys.argv and set new ones for attention_tracker.main()
+        original_argv = sys.argv
+        sys.argv = [
+            'attention_tracker.py',
+            '--video_path', video_path,
+            '--output_csv', csv_path
+        ]
+        
+        try:
+            # Call the main function from the attention_tracker module
+            attention_tracker_main()
+            print("Computer vision processing finished.")
+        finally:
+            # Restore original sys.argv
+            sys.argv = original_argv
+        
+        # Verify that CV script actually generated the CSV
+        print("Running NLP processing...")
+        
+        try:
+            # Verify CSV exists before processing
+            if not os.path.exists(csv_path):
+                print(f"Error: CSV file not found at {csv_path}")
+                return
+            
+            # Use EduVisionClassroomProcessor directly
+            processor = EduVisionClassroomProcessor()
+            
+            # Use absolute paths to avoid path resolution issues
+            abs_csv_path = os.path.abspath(csv_path)
+            abs_report_path = os.path.abspath(report_path)
+            
+            print(f"Processing CSV: {abs_csv_path}")
+            print(f"Output JSON: {abs_report_path}")
+            
+            # Process the CSV directly using the processor
+            results = processor.process_csv_file(abs_csv_path)
+            
+            # If we have classroom reports, use the first one to generate our JSON output
+            if results['successful_reports'] > 0 and results['classroom_reports']:
+                report = results['classroom_reports'][0]
+                # Parse the AI report into structured sections
+                parsed_sections = processor._parse_ai_report_to_sections(report['raw_ai_report'])
+                
+                # Create structured JSON report with parsed sections
+                json_report = {
+                    "report_metadata": {
+                        "report_type": "EduVision Classroom Analysis",
+                        "course_name": report['course_name'],
+                        "date": report['class_info']['date'],
+                        "session_time": str(report['class_info']['session_time']),
+                        "students_analyzed": report['student_count'],
+                        "generated_at": datetime.datetime.now().isoformat(),
+                        "processing_time": report['processing_time'],
+                        "video_id": video_id
+                    },
+                    "student_summary": {
+                        "total_students": report['student_count'],
+                        "student_list": report.get('student_names', [])
+                    },
+                    "ai_analysis": {
+                        "executive_summary": parsed_sections.get('executive_summary', 'Not available'),
+                        "individual_student_analysis": parsed_sections.get('individual_analysis', 'Not available'),
+                        "temporal_analysis": parsed_sections.get('temporal_analysis', 'Not available'),
+                        "classroom_dynamics": parsed_sections.get('classroom_dynamics', 'Not available'),
+                        "actionable_recommendations": parsed_sections.get('recommendations', 'Not available'),
+                        "metrics_summary": parsed_sections.get('metrics_summary', 'Not available')
+                    },
+                    "data_insights": {
+                        "report_id": video_id
+                    }
+                }
+                
+                # Write the JSON report to file
+                with open(abs_report_path, 'w', encoding='utf-8') as f:
+                    json.dump(json_report, f, indent=2, ensure_ascii=False)
+                
+                print(f"JSON report saved to: {abs_report_path}")
+            else:
+                # Handle case where no reports were generated
+                with open(abs_report_path, 'w') as f:
+                    json.dump({
+                        "error": "Failed to generate classroom reports",
+                        "status": "error",
+                        "message": f"No classroom reports were generated from the CSV data",
+                        "video_id": video_id
+                    }, f)
+                
+            print("NLP processing finished.")
+            
+            # Double check if the report was created
+            if not os.path.exists(report_path):
+                print(f"Warning: Report not found at expected path: {report_path}")
+                # Create a fallback report if no report was generated
+                with open(report_path, 'w') as f:
+                    json.dump({
+                        "report_metadata": {
+                            "report_type": "EduVision Classroom Analysis",
+                            "generated_at": datetime.datetime.now().isoformat()
+                        },
+                        "status": "completed",
+                        "message": "Video processed, but no detailed report was generated",
+                        "video_id": video_id
+                    }, f, indent=2)
+        except Exception as e:
+            print(f"Error running NLP script: {e}")
+            # Create a minimal JSON report with error info
+            with open(report_path, 'w') as f:
+                json.dump({
+                    "error": str(e),
+                    "status": "failed",
+                    "message": "Failed to process video",
+                    "video_id": video_id
+                }, f)
+            
+        # Update status after processing is done
+        if os.path.exists(report_path):
+            processing_status[video_id] = "completed"
+            print(f"Processing completed for video_id: {video_id}")
+        else:
+            processing_status[video_id] = "error"
+            print(f"Failed to generate report for video_id: {video_id}")
+        
+    except Exception as e:
+        print(f"Error during processing video {video_id}: {e}")
+        processing_status[video_id] = "error"
+        # Try to create an error report
+        try:
+            with open(os.path.join(upload_dir, f"{video_id}.json"), 'w') as f:
+                json.dump({
+                    "error": str(e),
+                    "status": "error",
+                    "message": "Failed to process video",
+                    "video_id": video_id
+                }, f)
+        except:
+            pass
+
+def get_status(report_id: str) -> str:
+    """Get the processing status of a video"""
+    return processing_status.get(report_id, "not found")

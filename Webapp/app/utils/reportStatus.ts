@@ -10,45 +10,29 @@
 export async function isReportComplete(reportId: string): Promise<boolean> {
   try {
     console.log("Checking if report is complete:", reportId);
-    
-    // First, try to fetch the report directly
-    try {
-      const reportResponse = await fetch(`http://localhost:8000/report/${reportId}`);
-      if (reportResponse.ok) {
-        console.log("Report exists, processing is complete");
-        return true;
-      }
-    } catch (err) {
-      console.log("Error checking report endpoint:", err);
-    }
-    
-    // If that fails, check the status endpoint
+
+    // First, check the status endpoint
     try {
       const statusResponse = await fetch(`http://localhost:8000/api/status/${reportId}`);
       if (statusResponse.ok) {
         const statusData = await statusResponse.json();
         if (statusData.status === "completed") {
-          console.log("Status endpoint confirms completion");
-          return true;
+          // If status is completed, try to fetch the report
+          try {
+            const reportResponse = await fetch(`http://localhost:8000/report/${reportId}`);
+            if (reportResponse.ok) {
+              console.log("Report exists, processing is complete");
+              return true;
+            }
+          } catch (err) {
+            console.log("Error fetching report after status completed:", err);
+          }
         }
       }
     } catch (err) {
       console.log("Error checking status endpoint:", err);
     }
-    
-    // As a last resort, mark the report as completed if we can force it on the backend
-    try {
-      const forceResponse = await fetch(`http://localhost:8000/api/status/${reportId}?force=completed`, {
-        method: 'POST'
-      });
-      if (forceResponse.ok) {
-        console.log("Forced completion status on backend");
-        return true;
-      }
-    } catch (err) {
-      console.log("Error forcing completion status:", err);
-    }
-    
+
     return false;
   } catch (err) {
     console.error("Error checking report completion:", err);
