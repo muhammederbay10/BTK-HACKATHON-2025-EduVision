@@ -382,8 +382,8 @@ def handle_new_student(frame, face_landmarks, frame_w, frame_h, student_id, mapp
     # Regular crop for photo_ID directory
     normal_img = crop_face_with_padding(
         frame, face_landmarks, frame_w, frame_h,
-        pad_left_ratio=0.20, pad_right_ratio=0.20,
-        pad_top_ratio=0.30, pad_bottom_ratio=0.30
+        pad_left_ratio=0.30, pad_right_ratio=0.30,
+        pad_top_ratio=0.50, pad_bottom_ratio=0.50
     )
     os.makedirs(photo_dir, exist_ok=True)
     normal_img_path = os.path.join(photo_dir, f"{student_id}.jpg")
@@ -443,7 +443,7 @@ def main():
                     if is_new:
                         handle_new_student(
                             frame, face_landmarks, w, h, s_id,
-                            mapping_json_path="id_name_mapping.json", photo_dir=photo_dir
+                            mapping_json_path="photo_id/id_name_mapping.json", photo_dir=photo_dir
                         )
                     # Landmarks extraction
                     landmarks = {}
