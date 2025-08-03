@@ -28,15 +28,33 @@ os.makedirs(LOGS_DIR, exist_ok=True)
 # Dictionary to store processing status
 processing_status = {}
 
-def process_video_task(video_id, video_path, course_name="API_Upload"):
+# Supported languages
+SUPPORTED_LANGUAGES = {
+    "english": "en",
+    "turkish": "tr", 
+    "arabic": "ar",
+    "spanish": "es",
+    "french": "fr",
+    "german": "de",
+    "italian": "it",
+    "portuguese": "pt",
+    "chinese": "zh",
+    "japanese": "ja",
+    "russian": "ru"
+}
+
+def process_video_task(video_id, video_path, course_name="API_Upload", language="english"):
     """Process video in a separate thread"""
     try:
         processing_status[video_id] = "processing"
         transcript_path = os.path.join(UPLOAD_DIR, f"{video_id}.txt")
         report_path = os.path.join(UPLOAD_DIR, f"{video_id}.json")
         
-        print(f"Processing video {video_id} for course '{course_name}' in background thread")
-        
+        print(f"🎬 Processing video {video_id}")
+        print(f"📚 Course: '{course_name}'")
+        print(f"🌍 Language: {language}")
+        print(f"🧵 Background thread started")
+
         # Use correct paths to scripts based on project structure
         project_root = os.path.dirname(os.path.dirname(__file__))
         cv_script = os.path.join(project_root, "computer-vision_integration", "attention_tracker.py")
@@ -76,7 +94,7 @@ def process_video_task(video_id, video_path, course_name="API_Upload"):
         
         # Run NLP script with course name
         print(f"Running NLP script: {nlp_script}")
-        print(f"With args: --csv_path {transcript_path} --course_name API_Upload")
+        print(f"With args: --csv_path {transcript_path} --course_name {course_name} --language {language}")
         
         # Set environment variable for logs directory to ensure NLP script uses correct logs path
         # Create logs directories in all potential locations the NLP script might be looking for
@@ -99,20 +117,21 @@ def process_video_task(video_id, video_path, course_name="API_Upload"):
         subprocess.run([
             sys.executable, str(nlp_script),
             "--csv_path", transcript_path,
-            "--course_name", course_name
+            "--course_name", course_name,
+            "--language", language
         ], check=True, env=env)
         print("NLP script finished.")
         
         # Update status after processing is done
         processing_status[video_id] = "completed"
-        print(f"Processing completed for video_id: {video_id}, course: {course_name}")
+        print(f"Processing completed for video_id: {video_id}, course: {course_name}, language: {language}")
         
     except Exception as e:
         print(f"Error during processing video {video_id}: {e}")
         processing_status[video_id] = "error"
 
 @app.post("/api/upload")
-async def upload_video(file: UploadFile = File(...), course_name: str = Query("API_Upload")):
+async def upload_video(file: UploadFile = File(...), course_name: str = Query("API_Upload"), language: str = Query("english")):
     video_id = str(uuid.uuid4())
     print(f"Generated video_id: {video_id} for course '{course_name}'")
     video_path = os.path.join(UPLOAD_DIR, f"{video_id}.mp4")
@@ -125,17 +144,22 @@ async def upload_video(file: UploadFile = File(...), course_name: str = Query("A
     
     # Initialize processing status
     processing_status[video_id] = "pending"
+
+    # Validate language input
+    if language.lower() not in SUPPORTED_LANGUAGES:
+        print(f"⚠️ Unsupported language '{language}', defaulting to English.")
+        language = "english"
     
     # Start processing in a separate thread
     thread = threading.Thread(
         target=process_video_task, 
-        args=(video_id, video_path, course_name)
+        args=(video_id, video_path, course_name, language)
     )
     thread.daemon = True
     thread.start()
     
     # Return immediately with the video ID
-    return {"reportId": video_id, "courseName": course_name}
+    return {"reportId": video_id, "courseName": course_name, "language": language}
 
 @app.post("/api/status/{report_id}")
 async def force_processing_status(report_id: str, force: str = Query(None)):
