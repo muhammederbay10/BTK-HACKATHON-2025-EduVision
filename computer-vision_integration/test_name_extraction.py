@@ -3,7 +3,7 @@ import pytesseract
 import pandas as pd
 
 # Load image
-image = cv2.imread("Screenshot 2025-08-02 020253.png")
+image = cv2.imread("test-data/bf169fce.jpg")
 
 # Optional: Resize if too small
 # image = cv2.resize(image, None, fx=2, fy=2, interpolation=cv2.INTER_LINEAR)
