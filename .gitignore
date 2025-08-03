@@ -6,4 +6,3 @@ config.py
 .vscode/
 *.csv
 test-data/
-.gitignore
