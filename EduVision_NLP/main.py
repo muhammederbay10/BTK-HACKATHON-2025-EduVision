@@ -178,11 +178,11 @@ class EduVisionClassroomProcessor:
                     results['successful_reports'] += 1
                     results['classroom_reports'].append(classroom_result)
                     
-                    # Save individual classroom report as JSON
+                    # Save individual classroom report as JSON only
                     if save_reports:
                         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-                        filename = f"classroom_{course_name.replace(' ', '_')}_{timestamp}.json"
-                        filepath = os.path.join('reports', filename)
+                        json_filename = f"classroom_{course_name.replace(' ', '_')}_{timestamp}.json"
+                        json_filepath = os.path.join('reports', json_filename)
                         
                         # Parse the AI report into structured sections
                         parsed_sections = self._parse_ai_report_to_sections(classroom_result['raw_ai_report'])
@@ -236,10 +236,10 @@ class EduVisionClassroomProcessor:
                             json_report["student_summary"]["student_list"].append(student_entry)
                         
                         # Save as JSON with proper formatting
-                        with open(filepath, 'w', encoding='utf-8') as f:
+                        with open(json_filepath, 'w', encoding='utf-8') as f:
                             json.dump(json_report, f, indent=2, ensure_ascii=False)
                         
-                        self.logger.info(f"📄 Saved JSON report: {filename}")
+                        self.logger.info(f"📄 Saved JSON report: {json_filename}")
                         
                 else:
                     results['failed_reports'] += 1
@@ -398,6 +398,7 @@ def main():
     parser = argparse.ArgumentParser(description='EduVision Classroom Report Processor')
     parser.add_argument('--csv_path', type=str, help='Path to the CSV file to process')
     parser.add_argument('--course_name', type=str, default='Unknown_Course', help='Name of the course')
+    parser.add_argument('--output_json', type=str, help='Path to save the output JSON report')
     
     args = parser.parse_args()
     
@@ -443,6 +444,46 @@ def main():
         print(f"👥 Total Students: {results['total_students']}")
         print(f"📁 Reports saved in 'reports/' directory")
         
+        # If output_json is specified, save the first classroom report to that location
+        if args.output_json and results['classroom_reports']:
+            report = results['classroom_reports'][0]
+            # Parse the AI report into structured sections
+            parsed_sections = processor._parse_ai_report_to_sections(report['raw_ai_report'])
+            
+            # Create structured JSON report with parsed sections
+            json_report = {
+                "report_metadata": {
+                    "report_type": "EduVision Classroom Analysis",
+                    "course_name": report['course_name'],
+                    "date": report['class_info']['date'],
+                    "session_time": str(report['class_info']['session_time']),
+                    "students_analyzed": report['student_count'],
+                    "generated_at": datetime.now().isoformat(),
+                    "processing_time": report['processing_time']
+                },
+                "student_summary": {
+                    "total_students": report['student_count'],
+                    "student_list": []
+                },
+                "ai_analysis": {
+                    "executive_summary": parsed_sections.get('executive_summary', 'Not available'),
+                    "individual_student_analysis": parsed_sections.get('individual_analysis', 'Not available'),
+                    "temporal_analysis": parsed_sections.get('temporal_analysis', 'Not available'),
+                    "classroom_dynamics": parsed_sections.get('classroom_dynamics', 'Not available'),
+                    "actionable_recommendations": parsed_sections.get('recommendations', 'Not available'),
+                    "metrics_summary": parsed_sections.get('metrics_summary', 'Not available')
+                },
+                "data_insights": {
+                    "report_id": os.path.basename(args.output_json).replace('.json', '')
+                }
+            }
+            
+            # Save as JSON with proper formatting
+            with open(args.output_json, 'w', encoding='utf-8') as f:
+                json.dump(json_report, f, indent=2, ensure_ascii=False)
+            
+            print(f"📄 Saved JSON report to: {args.output_json}")
+        
         # Show classroom details
         if results['classroom_reports']:
             print(f"\n📋 CLASSROOM REPORTS GENERATED:")
@@ -457,9 +498,25 @@ def main():
         
     except FileNotFoundError:
         print(f"❌ CSV file not found: {csv_file_path}")
+        # If output_json is specified, create an error report
+        if args.output_json:
+            with open(args.output_json, 'w', encoding='utf-8') as f:
+                json.dump({
+                    "error": f"CSV file not found: {csv_file_path}",
+                    "status": "error",
+                    "message": "Failed to process video - CSV file not found"
+                }, f, indent=2)
     except Exception as e:
         print(f"❌ Error: {str(e)}")
         processor.logger.error(f"Main error: {str(e)}")
+        # If output_json is specified, create an error report
+        if args.output_json:
+            with open(args.output_json, 'w', encoding='utf-8') as f:
+                json.dump({
+                    "error": str(e),
+                    "status": "error",
+                    "message": "Failed to process video - general error"
+                }, f, indent=2)
 
 if __name__ == "__main__":
     main()

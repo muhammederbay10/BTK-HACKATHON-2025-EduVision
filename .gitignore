@@ -60,3 +60,11 @@ config.py
 .vscode/
 *.csv
 
+
+
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+
+
+backend/uploads/

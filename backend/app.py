@@ -1,13 +1,40 @@
-# filepath: /Users/enes/Documents/eduvision/BTK-HACKATHON-2025-EduVision/backend/app.py
 import os
-import subprocess
 import sys
 import uuid
 import json
-import asyncio
+import datetime
+import threading
 from fastapi import FastAPI, File, UploadFile, HTTPException, Query # type: ignore
 from fastapi.middleware.cors import CORSMiddleware # type: ignore
-import threading
+
+# Add project root and module paths to Python path
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+cv_module_path = os.path.join(project_root, "computer-vision_integration")
+nlp_module_path = os.path.join(project_root, "EduVision_NLP")
+
+# Make sure the paths exist in Python's search path
+if cv_module_path not in sys.path:
+    sys.path.insert(0, cv_module_path)
+if nlp_module_path not in sys.path:
+    sys.path.insert(0, nlp_module_path)
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+# Import the required modules directly with their full file paths
+import importlib.util
+import importlib.machinery
+
+# Load attention_tracker
+attention_tracker_path = os.path.join(cv_module_path, "attention_tracker.py")
+loader = importlib.machinery.SourceFileLoader("attention_tracker", attention_tracker_path)
+attention_tracker = loader.load_module()
+attention_tracker_main = attention_tracker.main
+
+# Load EduVisionClassroomProcessor 
+nlp_main_path = os.path.join(nlp_module_path, "main.py")
+loader = importlib.machinery.SourceFileLoader("nlp_main", nlp_main_path)
+nlp_main = loader.load_module()
+EduVisionClassroomProcessor = nlp_main.EduVisionClassroomProcessor
 
 app = FastAPI()
 
@@ -19,12 +46,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-UPLOAD_DIR = "uploads"
+# Set absolute paths for all directories
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# Create logs directory required by NLP script
-LOGS_DIR = "logs"
-os.makedirs(LOGS_DIR, exist_ok=True)
+# Create logs and reports directories required by NLP script
+os.makedirs(os.path.join(project_root, "logs"), exist_ok=True)
+os.makedirs(os.path.join(project_root, "reports"), exist_ok=True)
+# Create reports directory in the backend folder too
+os.makedirs(os.path.join(BASE_DIR, "reports"), exist_ok=True)
 
 # Dictionary to store processing status
 processing_status = {}
@@ -33,83 +64,152 @@ def process_video_task(video_id, video_path):
     """Process video in a separate thread"""
     try:
         processing_status[video_id] = "processing"
-        transcript_path = os.path.join(UPLOAD_DIR, f"{video_id}.txt")
+        # Always use .csv extension
+        csv_path = os.path.join(UPLOAD_DIR, f"{video_id}.csv")
         report_path = os.path.join(UPLOAD_DIR, f"{video_id}.json")
         
         print(f"Processing video {video_id} in background thread")
         
-        # Use correct paths to scripts based on project structure
-        project_root = os.path.dirname(os.path.dirname(__file__))
-        cv_script = os.path.join(project_root, "computer-vision_integration", "attention_tracker.py")
+        # Process video directly using attention_tracker module
+        print(f"Running computer vision processing on {video_path}")
+        print(f"Output CSV: {csv_path}")
         
-        # Make sure the paths exist
-        if not os.path.exists(cv_script):
-            print(f"Warning: CV script not found at {cv_script}")
-            # Attempt to search for the script
-            for root, dirs, files in os.walk(project_root):
-                if "attention_tracker.py" in files:
-                    cv_script = os.path.join(root, "attention_tracker.py")
-                    print(f"Found CV script at: {cv_script}")
-                    break
+        # Save original sys.argv and set new ones for attention_tracker.main()
+        original_argv = sys.argv
+        sys.argv = [
+            'attention_tracker.py',
+            '--video_path', video_path,
+            '--output_csv', csv_path
+        ]
         
-        # Use the same approach as in test_integration.py
-        print(f"Running CV script: {cv_script}")
-        print(f"With args: --video_path {video_path} --output_csv {transcript_path}")
-        subprocess.run([
-            sys.executable, str(cv_script),
-            "--video_path", video_path,
-            "--output_csv", transcript_path
-        ], check=True)
-        print("Computer vision script finished.")
+        try:
+            # Call the main function from the attention_tracker module
+            attention_tracker_main()
+            print("Computer vision processing finished.")
+        finally:
+            # Restore original sys.argv
+            sys.argv = original_argv
         
-        print("Running NLP script...")
-        nlp_script = os.path.join(project_root, "EduVision NLP", "main.py")
+        # Verify that CV script actually generated the CSV
+        print("Running NLP processing...")
         
-        # Make sure the paths exist
-        if not os.path.exists(nlp_script):
-            print(f"Warning: NLP script not found at {nlp_script}")
-            # Attempt to search for the script
-            for root, dirs, files in os.walk(project_root):
-                if "main.py" in files and "NLP" in root:
-                    nlp_script = os.path.join(root, "main.py")
-                    print(f"Found NLP script at: {nlp_script}")
-                    break
-        
-        print(f"Running NLP script: {nlp_script}")
-        print(f"With args: --csv_path {transcript_path} --course_name API_Upload")
-        
-        # Set environment variable for logs directory to ensure NLP script uses correct logs path
-        # Create logs directories in all potential locations the NLP script might be looking for
-        nlp_logs_dir = os.path.join(project_root, "logs")
-        os.makedirs(nlp_logs_dir, exist_ok=True)
-        
-        # Also create logs dir in backend folder, which seems to be where the script is looking
-        backend_logs_dir = os.path.join(os.path.dirname(__file__), "logs")
-        os.makedirs(backend_logs_dir, exist_ok=True)
-        
-        # Create logs inside NLP directory as well
-        nlp_dir = os.path.dirname(nlp_script)
-        nlp_internal_logs_dir = os.path.join(nlp_dir, "logs")
-        os.makedirs(nlp_internal_logs_dir, exist_ok=True)
-        
-        # Create environment with custom LOGS_DIR
-        env = os.environ.copy()
-        env["LOGS_DIR"] = backend_logs_dir
-        
-        subprocess.run([
-            sys.executable, str(nlp_script),
-            "--csv_path", transcript_path,
-            "--course_name", "API_Upload"
-        ], check=True, env=env)
-        print("NLP script finished.")
-        
+        try:
+            # Verify CSV exists before processing
+            if not os.path.exists(csv_path):
+                print(f"Error: CSV file not found at {csv_path}")
+                return
+            
+            # Use EduVisionClassroomProcessor directly
+            processor = EduVisionClassroomProcessor()
+            
+            # Use absolute paths to avoid path resolution issues
+            abs_csv_path = os.path.abspath(csv_path)
+            abs_report_path = os.path.abspath(report_path)
+            
+            print(f"Processing CSV: {abs_csv_path}")
+            print(f"Output JSON: {abs_report_path}")
+            
+            # Process the CSV directly using the processor
+            results = processor.process_csv_file(abs_csv_path)
+            
+            # If we have classroom reports, use the first one to generate our JSON output
+            if results['successful_reports'] > 0 and results['classroom_reports']:
+                report = results['classroom_reports'][0]
+                # Parse the AI report into structured sections
+                parsed_sections = processor._parse_ai_report_to_sections(report['raw_ai_report'])
+                
+                # Create structured JSON report with parsed sections
+                json_report = {
+                    "report_metadata": {
+                        "report_type": "EduVision Classroom Analysis",
+                        "course_name": report['course_name'],
+                        "date": report['class_info']['date'],
+                        "session_time": str(report['class_info']['session_time']),
+                        "students_analyzed": report['student_count'],
+                        "generated_at": datetime.datetime.now().isoformat(),
+                        "processing_time": report['processing_time']
+                    },
+                    "student_summary": {
+                        "total_students": report['student_count'],
+                        "student_list": report.get('student_names', [])
+                    },
+                    "ai_analysis": {
+                        "executive_summary": parsed_sections.get('executive_summary', 'Not available'),
+                        "individual_student_analysis": parsed_sections.get('individual_analysis', 'Not available'),
+                        "temporal_analysis": parsed_sections.get('temporal_analysis', 'Not available'),
+                        "classroom_dynamics": parsed_sections.get('classroom_dynamics', 'Not available'),
+                        "actionable_recommendations": parsed_sections.get('recommendations', 'Not available'),
+                        "metrics_summary": parsed_sections.get('metrics_summary', 'Not available')
+                    },
+                    "data_insights": {
+                        "report_id": video_id
+                    }
+                }
+                
+                # Write the JSON report to file
+                with open(abs_report_path, 'w', encoding='utf-8') as f:
+                    json.dump(json_report, f, indent=2, ensure_ascii=False)
+                
+                print(f"JSON report saved to: {abs_report_path}")
+            else:
+                # Handle case where no reports were generated
+                with open(abs_report_path, 'w') as f:
+                    json.dump({
+                        "error": "Failed to generate classroom reports",
+                        "status": "error",
+                        "message": f"No classroom reports were generated from the CSV data",
+                        "video_id": video_id
+                    }, f)
+                
+            print("NLP processing finished.")
+            
+            # Double check if the report was created
+            if not os.path.exists(report_path):
+                print(f"Warning: Report not found at expected path: {report_path}")
+                # Create a fallback report if no report was generated
+                with open(report_path, 'w') as f:
+                    json.dump({
+                        "report_metadata": {
+                            "report_type": "EduVision Classroom Analysis",
+                            "generated_at": datetime.datetime.now().isoformat()
+                        },
+                        "status": "completed",
+                        "message": "Video processed, but no detailed report was generated",
+                        "video_id": video_id
+                    }, f, indent=2)
+        except Exception as e:
+            print(f"Error running NLP script: {e}")
+            # Create a minimal JSON report with error info
+            with open(report_path, 'w') as f:
+                json.dump({
+                    "error": str(e),
+                    "status": "failed",
+                    "message": "Failed to process video",
+                    "video_id": video_id
+                }, f)
+            
         # Update status after processing is done
-        processing_status[video_id] = "completed"
-        print(f"Processing completed for video_id: {video_id}")
+        if os.path.exists(report_path):
+            processing_status[video_id] = "completed"
+            print(f"Processing completed for video_id: {video_id}")
+        else:
+            processing_status[video_id] = "error"
+            print(f"Failed to generate report for video_id: {video_id}")
         
     except Exception as e:
         print(f"Error during processing video {video_id}: {e}")
         processing_status[video_id] = "error"
+        # Try to create an error report
+        try:
+            with open(os.path.join(UPLOAD_DIR, f"{video_id}.json"), 'w') as f:
+                json.dump({
+                    "error": str(e),
+                    "status": "error",
+                    "message": "Failed to process video",
+                    "video_id": video_id
+                }, f)
+        except:
+            pass
 
 @app.post("/api/upload")
 async def upload_video(file: UploadFile = File(...)):
@@ -119,8 +219,17 @@ async def upload_video(file: UploadFile = File(...)):
     print(f"Video path: {video_path}")
 
     # Save the uploaded file
-    with open(video_path, "wb") as buffer:
-        buffer.write(await file.read())
+    try:
+        with open(video_path, "wb") as buffer:
+            buffer.write(await file.read())
+        print(f"Video saved to {video_path}")
+    except FileNotFoundError:
+        # If there's still an issue with the path, create the directory again
+        print(f"Error: Directory not found. Creating directory: {UPLOAD_DIR}")
+        os.makedirs(UPLOAD_DIR, exist_ok=True)
+        # Try again after ensuring directory exists
+        with open(video_path, "wb") as buffer:
+            buffer.write(await file.read())
     print(f"Video saved to {video_path}")
     
     # Initialize processing status
@@ -137,16 +246,6 @@ async def upload_video(file: UploadFile = File(...)):
     # Return immediately with the video ID
     return {"reportId": video_id}
 
-@app.post("/api/status/{report_id}")
-async def force_processing_status(report_id: str, force: str = Query(None)):
-    """Force update the processing status for a report"""
-    print(f"Forcing status for report_id: {report_id} to {force}")
-    
-    if force == "completed":
-        processing_status[report_id] = "completed"
-        return {"status": "completed", "forced": True}
-    else:
-        raise HTTPException(status_code=400, detail="Invalid force value")
 
 @app.get("/api/status/{report_id}")
 async def get_processing_status(report_id: str):
@@ -154,113 +253,11 @@ async def get_processing_status(report_id: str):
     print(f"Checking status for report_id: {report_id}")
     
     if report_id not in processing_status:
-        # Check if the report file exists anyway (JSON format)
-        report_path = os.path.join(UPLOAD_DIR, f"{report_id}.json")
-        if os.path.exists(report_path):
-            print(f"Found JSON report for {report_id}")
-            processing_status[report_id] = "completed"
-            return {"status": "completed"}
+        return {"status": "not found"}
             
-        # Also check in the reports directory for any files related to this process
-        reports_dir = os.path.join(os.path.dirname(__file__), "reports")
-        if os.path.exists(reports_dir):
-            print(f"Checking reports directory for {report_id}")
-            # Look for any classroom report files
-            for filename in os.listdir(reports_dir):
-                if filename.endswith(".txt"):
-                    print(f"Found report file: {filename}")
-                    processing_status[report_id] = "completed"
-                    return {"status": "completed"}
-        
-        # Check if we printed "Processing completed" for this ID in the logs
-        if report_id in processing_status and processing_status[report_id] == "processing":
-            print(f"Checking if processing is already marked as completed for {report_id}")
-            # If we previously set it to processing and backend shows completion message,
-            # let's assume it's completed
-            processing_status[report_id] = "completed"
-            return {"status": "completed"}
-        
-        print(f"No report found for {report_id}")
-        # If we get here, we didn't find any report
-        if report_id in processing_status:
-            # Return whatever status we have
-            return {"status": processing_status[report_id]}
-        else:
-            # Not found in processing_status and no file exists
-            raise HTTPException(status_code=404, detail="Report not found")
-    
-    print(f"Status for {report_id} is {processing_status[report_id]}")
+    # Also check in the reports directory for any files related to this process
     return {"status": processing_status[report_id]}
 
-@app.get("/report/{report_id}")
-async def get_report(report_id: str):
-    print(f"Fetching report for report_id: {report_id}")
-    report_path = os.path.join(UPLOAD_DIR, f"{report_id}.json")
-    print(f"Report path: {report_path}")
-    
-    # Check if the report exists in the upload directory
-    if not os.path.exists(report_path):
-        # Also check in the reports directory as a fallback
-        reports_dir = os.path.join(os.path.dirname(__file__), "reports")
-        # Look for text file with report ID prefix
-        for filename in os.listdir(reports_dir) if os.path.exists(reports_dir) else []:
-            if filename.startswith("classroom_") and filename.endswith(".txt"):
-                # Found a text report, read it and return as plain text
-                full_path = os.path.join(reports_dir, filename)
-                try:
-                    with open(full_path, "r") as f:
-                        report_content = f.read()
-                    print(f"Text report found at: {full_path}")
-                    # Return text report in a format the frontend can handle
-                    return {"report": {"content": report_content, "type": "text"}}
-                except Exception as e:
-                    print(f"Error reading text report: {e}")
-    
-    # If the report ID is marked as completed in the status, but we can't find a file,
-    # return a generic placeholder report
-    if report_id in processing_status and processing_status[report_id] == "completed":
-        reports_dir = os.path.join(os.path.dirname(__file__), "reports")
-        if os.path.exists(reports_dir):
-            # Look for the most recent classroom report
-            most_recent_report = None
-            most_recent_time = 0
-            for filename in os.listdir(reports_dir):
-                if filename.startswith("classroom_") and filename.endswith(".txt"):
-                    full_path = os.path.join(reports_dir, filename)
-                    file_time = os.path.getmtime(full_path)
-                    if file_time > most_recent_time:
-                        most_recent_time = file_time
-                        most_recent_report = full_path
-                        
-            if most_recent_report:
-                try:
-                    with open(most_recent_report, "r") as f:
-                        report_content = f.read()
-                    print(f"Using most recent classroom report: {most_recent_report}")
-                    return {"report": {"content": report_content, "type": "text"}}
-                except Exception as e:
-                    print(f"Error reading most recent classroom report: {e}")
-        
-        # If we can't find any report, return a placeholder
-        return {
-            "report": {
-                "type": "text",
-                "content": f"Your video with ID {report_id} has been processed successfully.\n\nThe classroom report has been generated on the server. Please check the 'reports' directory for the full analysis output."
-            }
-        }
-    
-    # Try JSON report (original logic)
-    try:
-        with open(report_path, "r") as f:
-            report = json.load(f)
-        print(f"Report found for report_id: {report_id}")
-        return {"report": report}
-    except FileNotFoundError:
-        print(f"Report not found for report_id: {report_id}")
-        raise HTTPException(status_code=404, detail="Report not found")
-    except Exception as e:
-        print(f"An error occurred while fetching report {report_id}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn # type: ignore
