@@ -5,3 +5,4 @@ reports/
 config.py
 .vscode/
 *.csv
+test-data/
