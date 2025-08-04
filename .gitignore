@@ -1,3 +1,10 @@
+__pycache__/
+logs/
+reports/
+.env
+config.py
+.vscode/
+*.csv
 # Dependencies
 node_modules/
 /.pnp
@@ -60,3 +67,11 @@ config.py
 .vscode/
 *.csv
 
+
+
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+
+
+backend/uploads/

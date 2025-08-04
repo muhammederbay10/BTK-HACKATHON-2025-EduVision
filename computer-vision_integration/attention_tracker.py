@@ -8,6 +8,7 @@ import argparse
 from datetime import datetime
 import sys
 import traceback
+import os
 
 mp_face_mesh = mp.solutions.face_mesh
 face_mesh = mp_face_mesh.FaceMesh(
@@ -57,6 +58,26 @@ def setup_csv_output(csv_file_path=None):
         frame_idx = 0
     
     return csv_file_path, FIELDNAMES, frame_idx
+
+# Handle output path
+def handle_output_path(output_path):
+    """Ensure output path has the correct extension (.csv)"""
+    if not output_path:
+        return None
+        
+    # Make sure the output path has a .csv extension
+    if not output_path.lower().endswith('.csv'):
+        # Change the extension to .csv
+        base_path = os.path.splitext(output_path)[0]
+        output_path = base_path + '.csv'
+        print(f"Changed output path to: {output_path}")
+    
+    # Make sure the directory exists
+    output_dir = os.path.dirname(output_path)
+    if output_dir and not os.path.exists(output_dir):
+        os.makedirs(output_dir, exist_ok=True)
+        
+    return output_path
 
 # Student IDs (assign face ids)
 student_ids = {}
@@ -171,6 +192,7 @@ def main():
     
     # Setup CSV output
     csv_file_path, fieldnames, frame_idx = setup_csv_output(args.output_csv)
+    csv_file_path = handle_output_path(csv_file_path)
     
     # Setup video capture
     if args.video_path:

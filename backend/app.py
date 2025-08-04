@@ -1,12 +1,13 @@
 import os
-import subprocess
-import sys
 import uuid
-import json
-import asyncio
-from fastapi import FastAPI, File, UploadFile, HTTPException, Query # type: ignore
-from fastapi.middleware.cors import CORSMiddleware # type: ignore
 import threading
+import json
+from fastapi import FastAPI, File, Form, UploadFile, HTTPException, Query # type: ignore
+from fastapi.middleware.cors import CORSMiddleware # type: ignore
+from fastapi.responses import RedirectResponse # type: ignore
+
+# Import video processor module
+from video_processor import process_video_task, get_status, SUPPORTED_LANGUAGES
 
 app = FastAPI()
 
@@ -18,273 +19,114 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-UPLOAD_DIR = "uploads"
+# Set absolute paths for all directories
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# Create logs directory required by NLP script
-LOGS_DIR = "logs"
-os.makedirs(LOGS_DIR, exist_ok=True)
-
-# Dictionary to store processing status
-processing_status = {}
-
-# Supported languages
-SUPPORTED_LANGUAGES = {
-    "english": "en",
-    "turkish": "tr", 
-    "arabic": "ar",
-    "spanish": "es",
-    "french": "fr",
-    "german": "de",
-    "italian": "it",
-    "portuguese": "pt",
-    "chinese": "zh",
-    "japanese": "ja",
-    "russian": "ru"
-}
-
-def process_video_task(video_id, video_path, course_name="API_Upload", language="english"):
-    """Process video in a separate thread"""
-    try:
-        processing_status[video_id] = "processing"
-        transcript_path = os.path.join(UPLOAD_DIR, f"{video_id}.txt")
-        report_path = os.path.join(UPLOAD_DIR, f"{video_id}.json")
-        
-        print(f"🎬 Processing video {video_id}")
-        print(f"📚 Course: '{course_name}'")
-        print(f"🌍 Language: {language}")
-        print(f"🧵 Background thread started")
-
-        # Use correct paths to scripts based on project structure
-        project_root = os.path.dirname(os.path.dirname(__file__))
-        cv_script = os.path.join(project_root, "computer-vision_integration", "attention_tracker.py")
-        
-        # Make sure the paths exist
-        if not os.path.exists(cv_script):
-            print(f"Warning: CV script not found at {cv_script}")
-            # Attempt to search for the script
-            for root, dirs, files in os.walk(project_root):
-                if "attention_tracker.py" in files:
-                    cv_script = os.path.join(root, "attention_tracker.py")
-                    print(f"Found CV script at: {cv_script}")
-                    break
-        
-        # Use the same approach as in test_integration.py
-        print(f"Running CV script: {cv_script}")
-        print(f"With args: --video_path {video_path} --output_csv {transcript_path}")
-        subprocess.run([
-            sys.executable, str(cv_script),
-            "--video_path", video_path,
-            "--output_csv", transcript_path
-        ], check=True)
-        print("Computer vision script finished.")
-        
-        print("Running NLP script...")
-        nlp_script = os.path.join(project_root, "EduVision NLP", "main.py")
-        
-        # Make sure the paths exist
-        if not os.path.exists(nlp_script):
-            print(f"Warning: NLP script not found at {nlp_script}")
-            # Attempt to search for the script
-            for root, dirs, files in os.walk(project_root):
-                if "main.py" in files and "NLP" in root:
-                    nlp_script = os.path.join(root, "main.py")
-                    print(f"Found NLP script at: {nlp_script}")
-                    break
-        
-        # Run NLP script with course name
-        print(f"Running NLP script: {nlp_script}")
-        print(f"With args: --csv_path {transcript_path} --course_name {course_name} --language {language}")
-        
-        # Set environment variable for logs directory to ensure NLP script uses correct logs path
-        # Create logs directories in all potential locations the NLP script might be looking for
-        nlp_logs_dir = os.path.join(project_root, "logs")
-        os.makedirs(nlp_logs_dir, exist_ok=True)
-        
-        # Also create logs dir in backend folder, which seems to be where the script is looking
-        backend_logs_dir = os.path.join(os.path.dirname(__file__), "logs")
-        os.makedirs(backend_logs_dir, exist_ok=True)
-        
-        # Create logs inside NLP directory as well
-        nlp_dir = os.path.dirname(nlp_script)
-        nlp_internal_logs_dir = os.path.join(nlp_dir, "logs")
-        os.makedirs(nlp_internal_logs_dir, exist_ok=True)
-        
-        # Create environment with custom LOGS_DIR
-        env = os.environ.copy()
-        env["LOGS_DIR"] = backend_logs_dir
-        
-        subprocess.run([
-            sys.executable, str(nlp_script),
-            "--csv_path", transcript_path,
-            "--course_name", course_name,
-            "--language", language
-        ], check=True, env=env)
-        print("NLP script finished.")
-        
-        # Update status after processing is done
-        processing_status[video_id] = "completed"
-        print(f"Processing completed for video_id: {video_id}, course: {course_name}, language: {language}")
-        
-    except Exception as e:
-        print(f"Error during processing video {video_id}: {e}")
-        processing_status[video_id] = "error"
+# Create logs and reports directories required by NLP script
+project_root = os.path.dirname(BASE_DIR)
+os.makedirs(os.path.join(project_root, "logs"), exist_ok=True)
+os.makedirs(os.path.join(project_root, "reports"), exist_ok=True)
+# Create reports directory in the backend folder too
+os.makedirs(os.path.join(BASE_DIR, "reports"), exist_ok=True)
 
 @app.post("/api/upload")
-async def upload_video(file: UploadFile = File(...), course_name: str = Query("API_Upload"), language: str = Query("english")):
+async def upload_video(
+    file: UploadFile = File(...), 
+    lessonName: str = Form("default_lesson"), 
+    language: str = Form("english")
+):
+
+    print("======= FORM DATA RECEIVED =======")
+    print(f"Lesson Name: '{lessonName}'")
+    print(f"Language: '{language}'")
+    print(f"File name: '{file.filename}'")
+    print("=================================")
     video_id = str(uuid.uuid4())
-    print(f"Generated video_id: {video_id} for course '{course_name}'")
+    print(f"Generated video_id: {video_id} for course '{lessonName}'")
     video_path = os.path.join(UPLOAD_DIR, f"{video_id}.mp4")
     print(f"Video path: {video_path}")
 
     # Save the uploaded file
-    with open(video_path, "wb") as buffer:
-        buffer.write(await file.read())
+    try:
+        with open(video_path, "wb") as buffer:
+            buffer.write(await file.read())
+        print(f"Video saved to {video_path}")
+    except FileNotFoundError:
+        # If there's still an issue with the path, create the directory again
+        print(f"Error: Directory not found. Creating directory: {UPLOAD_DIR}")
+        os.makedirs(UPLOAD_DIR, exist_ok=True)
+        # Try again after ensuring directory exists
+        with open(video_path, "wb") as buffer:
+            buffer.write(await file.read())
     print(f"Video saved to {video_path}")
-    
-    # Initialize processing status
-    processing_status[video_id] = "pending"
-
-    # Validate language input
-    if language.lower() not in SUPPORTED_LANGUAGES:
-        print(f"⚠️ Unsupported language '{language}', defaulting to English.")
-        language = "english"
     
     # Start processing in a separate thread
     thread = threading.Thread(
         target=process_video_task, 
-        args=(video_id, video_path, course_name, language)
+        args=(video_id, video_path, UPLOAD_DIR, lessonName, language)
     )
     thread.daemon = True
     thread.start()
     
     # Return immediately with the video ID
-    return {"reportId": video_id, "courseName": course_name, "language": language}
+    return {"reportId": video_id}
 
-@app.post("/api/status/{report_id}")
-async def force_processing_status(report_id: str, force: str = Query(None)):
-    """Force update the processing status for a report"""
-    print(f"Forcing status for report_id: {report_id} to {force}")
-    
-    if force == "completed":
-        processing_status[report_id] = "completed"
-        return {"status": "completed", "forced": True}
-    else:
-        raise HTTPException(status_code=400, detail="Invalid force value")
 
 @app.get("/api/status/{report_id}")
 async def get_processing_status(report_id: str):
     """Check the processing status of a video"""
     print(f"Checking status for report_id: {report_id}")
     
-    if report_id not in processing_status:
-        # Check if the report file exists anyway (JSON format)
-        report_path = os.path.join(UPLOAD_DIR, f"{report_id}.json")
-        if os.path.exists(report_path):
-            print(f"Found JSON report for {report_id}")
-            processing_status[report_id] = "completed"
-            return {"status": "completed"}
-            
-        # Also check in the reports directory for any files related to this process
-        reports_dir = os.path.join(os.path.dirname(__file__), "reports")
-        if os.path.exists(reports_dir):
-            print(f"Checking reports directory for {report_id}")
-            # Look for any classroom report files
-            for filename in os.listdir(reports_dir):
-                if filename.endswith(".txt"):
-                    print(f"Found report file: {filename}")
-                    processing_status[report_id] = "completed"
-                    return {"status": "completed"}
-        
-        # Check if we printed "Processing completed" for this ID in the logs
-        if report_id in processing_status and processing_status[report_id] == "processing":
-            print(f"Checking if processing is already marked as completed for {report_id}")
-            # If we previously set it to processing and backend shows completion message,
-            # let's assume it's completed
-            processing_status[report_id] = "completed"
-            return {"status": "completed"}
-        
-        print(f"No report found for {report_id}")
-        # If we get here, we didn't find any report
-        if report_id in processing_status:
-            # Return whatever status we have
-            return {"status": processing_status[report_id]}
-        else:
-            # Not found in processing_status and no file exists
-            raise HTTPException(status_code=404, detail="Report not found")
+    status = get_status(report_id)
+    return {"status": status}
+
+@app.get("/api/report/{report_id}")
+async def get_report(report_id: str):
+    """Get the processing report for a video"""
+    print(f"Getting report for report_id: {report_id}")
     
-    print(f"Status for {report_id} is {processing_status[report_id]}")
-    return {"status": processing_status[report_id]}
+    # First, check if processing is still ongoing
+    status = get_status(report_id)
+    if status == "processing":
+        return {"status": "processing", "message": "Report is still being generated"}
+    
+    # First try to find the report in the backend reports directory
+    backend_reports_dir = os.path.join(BASE_DIR, "reports")
+    backend_report_path = os.path.join(backend_reports_dir, f"{report_id}.json")
+    
+    # If not in backend reports dir, look in upload directory as fallback
+    report_path = backend_report_path if os.path.exists(backend_report_path) else os.path.join(UPLOAD_DIR, f"{report_id}.json")
+    
+    if os.path.exists(report_path):
+        try:
+            with open(report_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error reading report: {str(e)}")
+    else:
+        raise HTTPException(status_code=404, detail=f"Report not found for ID: {report_id}")
 
 @app.get("/report/{report_id}")
-async def get_report(report_id: str):
-    print(f"Fetching report for report_id: {report_id}")
+async def redirect_to_report(report_id: str):
+    """Redirect to the report page"""
+    print(f"Redirecting to report for report_id: {report_id}")
+    
+    # Check if the report exists
     report_path = os.path.join(UPLOAD_DIR, f"{report_id}.json")
-    print(f"Report path: {report_path}")
-    
-    # Check if the report exists in the upload directory
-    if not os.path.exists(report_path):
-        # Also check in the reports directory as a fallback
-        reports_dir = os.path.join(os.path.dirname(__file__), "reports")
-        # Look for text file with report ID prefix
-        for filename in os.listdir(reports_dir) if os.path.exists(reports_dir) else []:
-            if filename.startswith("classroom_") and filename.endswith(".txt"):
-                # Found a text report, read it and return as plain text
-                full_path = os.path.join(reports_dir, filename)
-                try:
-                    with open(full_path, "r") as f:
-                        report_content = f.read()
-                    print(f"Text report found at: {full_path}")
-                    # Return text report in a format the frontend can handle
-                    return {"report": {"content": report_content, "type": "text"}}
-                except Exception as e:
-                    print(f"Error reading text report: {e}")
-    
-    # If the report ID is marked as completed in the status, but we can't find a file,
-    # return a generic placeholder report
-    if report_id in processing_status and processing_status[report_id] == "completed":
-        reports_dir = os.path.join(os.path.dirname(__file__), "reports")
-        if os.path.exists(reports_dir):
-            # Look for the most recent classroom report
-            most_recent_report = None
-            most_recent_time = 0
-            for filename in os.listdir(reports_dir):
-                if filename.startswith("classroom_") and filename.endswith(".txt"):
-                    full_path = os.path.join(reports_dir, filename)
-                    file_time = os.path.getmtime(full_path)
-                    if file_time > most_recent_time:
-                        most_recent_time = file_time
-                        most_recent_report = full_path
-                        
-            if most_recent_report:
-                try:
-                    with open(most_recent_report, "r") as f:
-                        report_content = f.read()
-                    print(f"Using most recent classroom report: {most_recent_report}")
-                    return {"report": {"content": report_content, "type": "text"}}
-                except Exception as e:
-                    print(f"Error reading most recent classroom report: {e}")
-        
-        # If we can't find any report, return a placeholder
-        return {
-            "report": {
-                "type": "text",
-                "content": f"Your video with ID {report_id} has been processed successfully.\n\nThe classroom report has been generated on the server. Please check the 'reports' directory for the full analysis output."
-            }
-        }
-    
-    # Try JSON report (original logic)
-    try:
-        with open(report_path, "r") as f:
-            report = json.load(f)
-        print(f"Report found for report_id: {report_id}")
-        return {"report": report}
-    except FileNotFoundError:
-        print(f"Report not found for report_id: {report_id}")
-        raise HTTPException(status_code=404, detail="Report not found")
-    except Exception as e:
-        print(f"An error occurred while fetching report {report_id}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    if os.path.exists(report_path):
+        return RedirectResponse(url=f"/api/report/{report_id}")
+    else:
+        raise HTTPException(status_code=404, detail=f"Report not found for ID: {report_id}")
+
+@app.get("/api/languages")
+async def get_supported_languages():
+    """Return a list of supported languages for the application"""
+    return {
+        "languages": [{"name": lang, "code": code} for lang, code in SUPPORTED_LANGUAGES.items()]
+    }
+
 
 if __name__ == "__main__":
     import uvicorn # type: ignore
