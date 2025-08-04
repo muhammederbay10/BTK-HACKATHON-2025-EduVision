@@ -47,8 +47,11 @@ const reportStyles = {
   exportButton: "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 flex items-center gap-2 transition-all duration-200 transform hover:scale-105"
 };
 
+// Use any type for page params to avoid type conflicts with Next.js
+// The "use client" directive on this file means it's a client component
+// and won't have the same page props as server components
 interface ReportPageProps {
-  params: { id: string };
+  params: any;
 }
 
 interface ReportMetadata {
