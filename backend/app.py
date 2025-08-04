@@ -2,7 +2,7 @@ import os
 import uuid
 import threading
 import json
-from fastapi import FastAPI, File, UploadFile, HTTPException, Query # type: ignore
+from fastapi import FastAPI, File, Form, UploadFile, HTTPException, Query # type: ignore
 from fastapi.middleware.cors import CORSMiddleware # type: ignore
 from fastapi.responses import RedirectResponse # type: ignore
 
@@ -32,9 +32,19 @@ os.makedirs(os.path.join(project_root, "reports"), exist_ok=True)
 os.makedirs(os.path.join(BASE_DIR, "reports"), exist_ok=True)
 
 @app.post("/api/upload")
-async def upload_video(file: UploadFile = File(...), course_name: str = Query("API_Upload"), language: str = Query("english")):
+async def upload_video(
+    file: UploadFile = File(...), 
+    lessonName: str = Form("default_lesson"), 
+    language: str = Form("english")
+):
+
+    print("======= FORM DATA RECEIVED =======")
+    print(f"Lesson Name: '{lessonName}'")
+    print(f"Language: '{language}'")
+    print(f"File name: '{file.filename}'")
+    print("=================================")
     video_id = str(uuid.uuid4())
-    print(f"Generated video_id: {video_id} for course '{course_name}'")
+    print(f"Generated video_id: {video_id} for course '{lessonName}'")
     video_path = os.path.join(UPLOAD_DIR, f"{video_id}.mp4")
     print(f"Video path: {video_path}")
 
@@ -55,7 +65,7 @@ async def upload_video(file: UploadFile = File(...), course_name: str = Query("A
     # Start processing in a separate thread
     thread = threading.Thread(
         target=process_video_task, 
-        args=(video_id, video_path, UPLOAD_DIR, course_name, language)
+        args=(video_id, video_path, UPLOAD_DIR, lessonName, language)
     )
     thread.daemon = True
     thread.start()

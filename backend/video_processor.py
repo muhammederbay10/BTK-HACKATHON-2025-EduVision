@@ -54,7 +54,7 @@ EduVisionClassroomProcessor = nlp_main.EduVisionClassroomProcessor
 # Dictionary to store processing status
 processing_status: Dict[str, str] = {}
 
-def process_video_task(video_id: str, video_path: str, upload_dir: str, course_name: str = "API_Upload", language: str = "english") -> None:
+def process_video_task(video_id: str, video_path: str, upload_dir: str, course_name: str = "test_lesson", language: str = "turkish") -> None:
     """Process video in a separate thread"""
     try:
         processing_status[video_id] = "processing"
