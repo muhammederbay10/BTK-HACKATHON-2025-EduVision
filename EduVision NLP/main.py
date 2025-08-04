@@ -16,7 +16,7 @@ class EduVisionClassroomProcessor:
     """
     Main class to process CSV data from computer vision model and generate classroom reports.
     """
-    
+
     def __init__(self):
         """Initialize the classroom report processor with all necessary components."""
         # Create output directories
@@ -188,7 +188,7 @@ class EduVisionClassroomProcessor:
                     # Save individual classroom report as JSON
                     if save_reports:
                         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-                        filename = f"classroom_{course_name.replace(' ', '_')}_{language}_{timestamp}.json"
+                        filename = f"classroom_{course_name.replace(' ', '')}{language}_{timestamp}.json"
                         filepath = os.path.join('reports', filename)
                         
                         # Parse the AI report into structured sections
@@ -624,7 +624,7 @@ class EduVisionClassroomProcessor:
                 
                 # Check if this line is a section header
                 found_section = None
-                if line_clean.startswith('**') and any(char.isdigit() for char in line_clean[:10]):
+                if line_clean.startswith('') and any(char.isdigit() for char in line_clean[:10]):
                     # Try to match against known section keywords
                     for section_key, keywords in section_keywords.items():
                         for keyword in keywords:
@@ -642,7 +642,7 @@ class EduVisionClassroomProcessor:
                     # Start new section
                     current_section = found_section
                     current_content = []
-                elif current_section and line_clean and not line_clean.startswith('**'):
+                elif current_section and line_clean and not line_clean.startswith(''):
                     # Add content to current section
                     current_content.append(line)
             
