@@ -129,7 +129,7 @@ class EduVisionClassroomProcessor:
                 'student_count': len(students_data) if students_data else 0
             }
 
-    def process_csv_file(self, csv_file_path: str, save_reports: bool = True, language: str = "en") -> dict:
+    def process_csv_file(self, csv_file_path: str, save_reports: bool = True, language: str = "en", course_name: str = None) -> dict:
         """
         Process CSV file and generate classroom reports in JSON format.
         
@@ -168,14 +168,18 @@ class EduVisionClassroomProcessor:
                 'total_students': len(df),
                 'classroom_reports': [],
                 'errors': [],
-                'language': language
+                'language': language,
+                'course_name': course_name
             }
             
-            for course_name, students_data in classroom_batches.items():
+            for batch_name, students_data in classroom_batches.items():
+                # user-provide course name or fallback to batch name
+                actual_course_name = course_name if course_name else batch_name
+
                 self.logger.info(f"Processing {course_name} with {len(students_data)} students...")
                 
                 # Process this classroom
-                classroom_result = self.process_classroom(course_name, students_data, language= language)
+                classroom_result = self.process_classroom(actual_course_name, students_data, language= language)
                 
                 if classroom_result['success']:
                     results['successful_reports'] += 1
@@ -197,7 +201,7 @@ class EduVisionClassroomProcessor:
                         json_report = {
                             "report_metadata": {
                                 "report_type": "EduVision Classroom Analysis",
-                                "course_name": course_name,
+                                "course_name": actual_course_name,
                                 "date": classroom_result['class_info']['date'],
                                 "session_time": str(classroom_result['class_info']['session_time']),
                                 "students_analyzed": classroom_result['student_count'],
@@ -742,7 +746,7 @@ def main():
     
     parser = argparse.ArgumentParser(description='EduVision Classroom Report Processor')
     parser.add_argument('--csv_path', type=str, help='Path to the CSV file to process')
-    parser.add_argument('--course_name', type=str, default='Unknown_Course', help='Name of the course')
+    parser.add_argument('--course_name', type=str, required=True, help='Name of the course (e.g., "Mathematics 101", "Physics Advanced")')  # Made required
     parser.add_argument('--language', type=str, default='en', help='Report language (english, Turkish, french, arabic, etc.)')
     
     args = parser.parse_args()
@@ -754,6 +758,7 @@ def main():
     
     # Get CSV file path
     csv_file_path = args.csv_path
+    course_name = args.course_name
     report_language = args.language.lower()
     
     if not csv_file_path:
@@ -768,6 +773,8 @@ def main():
             return
         
         print("✅ Gemini API connection successful!")
+        print(f"📚 Course: {course_name}")  
+        print(f"🌍 Language: {report_language.title()}")
         
         # Validate CSV format first
         print(f"\n📊 Validating CSV format...")
@@ -781,10 +788,14 @@ def main():
         
         # Process the CSV
         print(f"\n⚡ Processing classroom reports...")
-        results = processor.process_csv_file(csv_file_path, language=report_language)
+        results = processor.process_csv_file(csv_file_path,
+                                            language=report_language,
+                                            course_name=course_name,
+                                            save_reports=True)
         
         # Display results
         print(f"\n📊 PROCESSING COMPLETE:")
+        print(f"📚 Course: {course_name}")
         print(f"✅ Successful Classrooms: {results['successful_reports']}")
         print(f"❌ Failed Classrooms: {results['failed_reports']}")
         print(f"👥 Total Students: {results['total_students']}")
