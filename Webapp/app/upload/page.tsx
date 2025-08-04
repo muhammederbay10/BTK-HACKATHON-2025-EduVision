@@ -6,12 +6,17 @@ import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useRouter } from 'next/navigation';
 import { 
   UploadIcon, 
   FileVideoIcon, 
   CheckCircleIcon,
-  AlertCircleIcon
+  AlertCircleIcon,
+  BookOpenIcon,
+  GlobeIcon
 } from 'lucide-react';
 
 export default function UploadPage() {
@@ -20,6 +25,8 @@ export default function UploadPage() {
   const [uploadComplete, setUploadComplete] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [reportId, setReportId] = useState<string>('');
+  const [lessonName, setLessonName] = useState<string>('');
+  const [language, setLanguage] = useState<string>('English');
   const router = useRouter();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -76,6 +83,11 @@ export default function UploadPage() {
       return;
     }
     
+    if (!lessonName.trim()) {
+      setProcessingError('Please enter a lesson name');
+      return;
+    }
+    
     setIsProcessing(true);
     setProcessingError(null);
     
@@ -83,6 +95,8 @@ export default function UploadPage() {
       // Create FormData to upload the file
       const formData = new FormData();
       formData.append('file', uploadedFile);
+      formData.append('lessonName', lessonName);
+      formData.append('language', language);
 
       console.log("Starting upload and processing...");
       
@@ -270,6 +284,47 @@ export default function UploadPage() {
                           <p className="text-sm text-gray-500">Report ID: {reportId}</p>
                         </div>
                       </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-5 mb-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="lessonName" className="flex items-center gap-2">
+                        <BookOpenIcon className="h-4 w-4" />
+                        Lesson Name
+                      </Label>
+                      <Input
+                        id="lessonName"
+                        placeholder="Enter lesson name"
+                        value={lessonName}
+                        onChange={(e) => setLessonName(e.target.value)}
+                        className="bg-white/80 dark:bg-gray-800/80"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="language" className="flex items-center gap-2">
+                        <GlobeIcon className="h-4 w-4" />
+                        Content Language
+                      </Label>
+                      <Select value={language} onValueChange={setLanguage}>
+                        <SelectTrigger id="language" className="bg-white/80 dark:bg-gray-800/80">
+                          <SelectValue placeholder="Select language" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="English">English</SelectItem>
+                          <SelectItem value="Turkish">Turkish</SelectItem>
+                          <SelectItem value="Arabic">Arabic</SelectItem>
+                          <SelectItem value="Spanish">Spanish</SelectItem>
+                          <SelectItem value="French">French</SelectItem>
+                          <SelectItem value="German">German</SelectItem>
+                          <SelectItem value="Italian">Italian</SelectItem>
+                          <SelectItem value="Portuguese">Portuguese</SelectItem>
+                          <SelectItem value="Chinese">Chinese</SelectItem>
+                          <SelectItem value="Japanese">Japanese</SelectItem>
+                          <SelectItem value="Russian">Russian</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                   
