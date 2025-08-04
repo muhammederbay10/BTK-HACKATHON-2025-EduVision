@@ -143,20 +143,6 @@ def process_video_task(video_id: str, video_path: str, upload_dir: str) -> None:
                 
             print("NLP processing finished.")
             
-            # Double check if the report was created
-            if not os.path.exists(report_path):
-                print(f"Warning: Report not found at expected path: {report_path}")
-                # Create a fallback report if no report was generated
-                with open(report_path, 'w') as f:
-                    json.dump({
-                        "report_metadata": {
-                            "report_type": "EduVision Classroom Analysis",
-                            "generated_at": datetime.datetime.now().isoformat()
-                        },
-                        "status": "completed",
-                        "message": "Video processed, but no detailed report was generated",
-                        "video_id": video_id
-                    }, f, indent=2)
         except Exception as e:
             print(f"Error running NLP script: {e}")
             # Create a minimal JSON report with error info

@@ -59,19 +59,13 @@ export default function ProcessingPage({ reportId }: Props) {
     // Initialize the estimated time based on typical processing duration
     setEstimatedTimeRemaining(60); // Assume 60 seconds initially
     
-    // Use our utility to poll until the report is ready
+    // Use our utility to poll until the report is ready - THIS HANDLES ALL POLLING
     const cancelPolling = pollUntilComplete(reportId, () => {
       console.log("Report is complete (from utility)");
       setStatus('completed');
       setProgress(100);
       setEstimatedTimeRemaining(0);
-    }, 60, 2000);
-    
-    // After a certain amount of time, assume processing might be complete
-    const assumeCompletionTimeout = setTimeout(() => {
-      console.log("Auto-checking if report exists after timeout...");
-      checkReportExists();
-    }, 15000);
+    }, 60, 6000); // Polling every 6 seconds
     
     // Update estimated time remaining
     const timeRemainingInterval = setInterval(() => {
@@ -80,6 +74,9 @@ export default function ProcessingPage({ reportId }: Props) {
           if (prev === null) return null;
           return Math.max(0, prev - 1);
         });
+        
+        // Keep track of polling attempts for UI feedback only
+        setPollAttempts(prev => prev + 1);
       }
     }, 1000);
     
@@ -104,80 +101,12 @@ export default function ProcessingPage({ reportId }: Props) {
       });
     }, 1000);
 
-    // Poll for status
-    const statusInterval = setInterval(async () => {
-      try {
-        setPollAttempts(prev => prev + 1);
-        console.log(`Polling status for reportId: ${reportId} (attempt ${pollAttempts + 1})`);
-        
-        // First try direct report check
-        const reportExists = await checkReportExists();
-        if (reportExists) {
-          clearInterval(statusInterval);
-          clearInterval(progressInterval);
-          clearInterval(timeRemainingInterval);
-          return;
-        }
-        
-        // Reset connection issue flag when we successfully make a request
-        setConnectionIssue(false);
-        
-        // Regular status check
-        const response = await fetch(`http://localhost:8000/api/status/${reportId}`);
-        
-        if (!response.ok) {
-          console.error("Status check failed:", response.status, response.statusText);
-          
-          // If we've been polling for a while and the backend might have completed,
-          // don't error out, just keep trying
-          if (pollAttempts > 5) {
-            console.log("Many polling attempts, continuing despite error");
-            return;
-          }
-          
-          setError(`Failed to fetch processing status: ${response.status}`);
-          return;
-        }
-        
-        const data = await response.json();
-        console.log("Status response:", data);
-        setStatus(data.status);
-        
-        if (data.status === 'completed') {
-          console.log("Status endpoint confirms processing is complete!");
-          clearInterval(statusInterval);
-          clearInterval(progressInterval);
-          clearInterval(timeRemainingInterval);
-          setProgress(100);
-          setEstimatedTimeRemaining(0);
-        } else if (data.status === 'error') {
-          clearInterval(statusInterval);
-          clearInterval(progressInterval);
-          clearInterval(timeRemainingInterval);
-          setError('An error occurred during processing');
-        }
-        
-        // After a certain number of polling attempts, if we're still processing,
-        // let's check the report directly again
-        if (pollAttempts > 5 && pollAttempts % 3 === 0) {
-          checkReportExists();
-        }
-      } catch (err) {
-        console.error('Error fetching status:', err);
-        // Set connection issue flag
-        setConnectionIssue(true);
-        // Don't stop polling on network errors, try again later
-      }
-    }, 6000); // Poll every 3 seconds
-
     return () => {
       clearInterval(progressInterval);
-      clearInterval(statusInterval);
       clearInterval(timeRemainingInterval);
-      clearTimeout(assumeCompletionTimeout);
       cancelPolling();
     };
-  }, [reportId, status, pollAttempts, checkReportExists, estimatedTimeRemaining]);
+  }, [reportId, status, pollAttempts, estimatedTimeRemaining]);
 
   const getStatusText = () => {
     switch (status) {

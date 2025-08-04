@@ -11,6 +11,10 @@ export const dynamic = 'force-dynamic';
 // All other routes will be rendered at runtime
 export const generateStaticParams = getParams;
 
-export default function Page({ params }: { params: { id: string } }) {
-  return <ProcessingPage reportId={params.id} />;
+export default async function Page({ params }: { params: { id: string } }) {
+  // Make sure params is fully resolved
+  const reportId = params.id;
+
+  // Return the client component with the resolved ID
+  return <ProcessingPage reportId={reportId} />;
 }
