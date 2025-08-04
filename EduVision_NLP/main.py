@@ -17,7 +17,7 @@ class EduVisionClassroomProcessor:
     Main class to process CSV data from computer vision model and generate classroom reports.
     """
 
-    def _init_(self):
+    def __init__(self):
         """Initialize the classroom report processor with all necessary components."""
         # Create output directories
         project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
