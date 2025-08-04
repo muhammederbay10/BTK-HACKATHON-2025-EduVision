@@ -1,0 +1,10 @@
+# filepath: /Users/enes/Documents/eduvision/BTK-HACKATHON-2025-EduVision/backend/requirements.txt
+fastapi
+uvicorn
+python-multipart
+opencv-python
+mediapipe
+numpy
+pandas
+python-dotenv
+google-generativeai

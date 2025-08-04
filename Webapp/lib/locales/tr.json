@@ -1,0 +1,47 @@
+{
+  "nav": {
+    "upload": "Yükle",
+    "history": "Geçmiş",
+    "about": "Hakkında"
+  },
+  "home": {
+    "title": "Sanal Öğretiminizi Dönüştürün",
+    "subtitle": "Öğrencilerinizin sanal derslerde ne kadar katılımcı olduğunu keşfedin. Video kayıtlarınızı yükleyin ve öğrenci dikkatini ve öğrenme sonuçlarını iyileştirmek için eylem planları alın.",
+    "uploadButton": "İlk Videonuzu Yükleyin",
+    "sampleReportsButton": "Örnek Raporları Görüntüle",
+    "features": {
+      "videoAnalysis": {
+        "title": "Video Analizi",
+        "description": "Sanal ders kayıtlarınızı yükleyin ve kapsamlı katılım öngörüleri alın"
+      },
+      "aiInsights": {
+        "title": "Yapay Zeka Destekli İçgörüler",
+        "description": "Gelişmiş algoritmalar öğrenci dikkat kalıplarını ve katılım seviyelerini analiz eder"
+      },
+      "performanceMetrics": {
+        "title": "Performans Metrikleri",
+        "description": "Zaman içindeki dikkat eğilimlerini takip edin ve en yüksek katılım anlarını belirleyin"
+      },
+      "studentAnalytics": {
+        "title": "Öğrenci Analitiği",
+        "description": "Daha iyi öğretim için bireysel ve grup dikkat kalıplarını anlayın"
+      }
+    },
+    "demo": {
+      "title": "Başlamaya Hazır mısınız?",
+      "subtitle": "EduVision'in sanal derslerinizdeki öğrenci katılımını anlamanıza ve iyileştirmenize nasıl yardımcı olabileceğini görün.",
+      "step1": {
+        "title": "Video Yükle",
+        "description": "Ders kaydınızı sürükleyip bırakın"
+      },
+      "step2": {
+        "title": "Yapay Zeka Analizi",
+        "description": "Yapay zekamız öğrenci katılımını analiz eder"
+      },
+      "step3": {
+        "title": "İçgörüler Alın",
+        "description": "Eylem planları ve metrikler alın"
+      }
+    }
+  }
+}
