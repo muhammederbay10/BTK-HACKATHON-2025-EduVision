@@ -7,6 +7,21 @@ import threading
 # Import needed for type annotations
 from typing import Dict, Any
 
+# Define supported languages
+SUPPORTED_LANGUAGES = {
+    "english": "en",
+    "turkish": "tr",
+    "arabic": "ar",
+    "spanish": "es",
+    "french": "fr",
+    "german": "de",
+    "italian": "it",
+    "portuguese": "pt",
+    "chinese": "zh",
+    "japanese": "ja",
+    "russian": "ru"
+}
+
 # Add project root and module paths to Python path
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 cv_module_path = os.path.join(project_root, "computer-vision_integration")
@@ -39,7 +54,7 @@ EduVisionClassroomProcessor = nlp_main.EduVisionClassroomProcessor
 # Dictionary to store processing status
 processing_status: Dict[str, str] = {}
 
-def process_video_task(video_id: str, video_path: str, upload_dir: str) -> None:
+def process_video_task(video_id: str, video_path: str, upload_dir: str, course_name: str = "API_Upload", language: str = "english") -> None:
     """Process video in a separate thread"""
     try:
         processing_status[video_id] = "processing"
@@ -47,7 +62,10 @@ def process_video_task(video_id: str, video_path: str, upload_dir: str) -> None:
         csv_path = os.path.join(upload_dir, f"{video_id}.csv")
         report_path = os.path.join(upload_dir, f"{video_id}.json")
         
-        print(f"Processing video {video_id} in background thread")
+        print(f"🎬 Processing video {video_id}")
+        print(f"📚 Course: '{course_name}'")
+        print(f"🌍 Language: {language}")
+        print(f"🧵 Background thread started")
         
         # Process video directly using attention_tracker module
         print(f"Running computer vision processing on {video_path}")
@@ -87,9 +105,14 @@ def process_video_task(video_id: str, video_path: str, upload_dir: str) -> None:
             
             print(f"Processing CSV: {abs_csv_path}")
             print(f"Output JSON: {abs_report_path}")
+            print(f"Course Name: {course_name}")
+            print(f"Language: {language}")
             
-            # Process the CSV directly using the processor
-            results = processor.process_csv_file(abs_csv_path)
+            # Get language code from language name
+            lang_code = SUPPORTED_LANGUAGES.get(language.lower(), "en")
+            
+            # Process the CSV directly using the processor with course name and language
+            results = processor.process_csv_file(abs_csv_path, course_name=course_name, language=lang_code)
             
             # If we have classroom reports, use the first one to generate our JSON output
             if results['successful_reports'] > 0 and results['classroom_reports']:
@@ -97,7 +120,10 @@ def process_video_task(video_id: str, video_path: str, upload_dir: str) -> None:
                 # Parse the AI report into structured sections
                 parsed_sections = processor._parse_ai_report_to_sections(report['raw_ai_report'])
                 
-                # Create structured JSON report with parsed sections
+                # Get attention over time analysis from the report
+                students_data = processor._generate_attention_over_time_analysis(report['students_data']) if hasattr(report, 'students_data') else {}
+                
+                # Create structured JSON report with parsed sections and additional analysis
                 json_report = {
                     "report_metadata": {
                         "report_type": "EduVision Classroom Analysis",
@@ -107,7 +133,8 @@ def process_video_task(video_id: str, video_path: str, upload_dir: str) -> None:
                         "students_analyzed": report['student_count'],
                         "generated_at": datetime.datetime.now().isoformat(),
                         "processing_time": report['processing_time'],
-                        "video_id": video_id
+                        "video_id": video_id,
+                        "language": language
                     },
                     "student_summary": {
                         "total_students": report['student_count'],
@@ -121,25 +148,47 @@ def process_video_task(video_id: str, video_path: str, upload_dir: str) -> None:
                         "actionable_recommendations": parsed_sections.get('recommendations', 'Not available'),
                         "metrics_summary": parsed_sections.get('metrics_summary', 'Not available')
                     },
+                    "attention_over_time": students_data,
                     "data_insights": {
                         "report_id": video_id
                     }
                 }
                 
-                # Write the JSON report to file
+                # Make sure there's a reports directory in the backend
+                backend_reports_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "reports")
+                os.makedirs(backend_reports_dir, exist_ok=True)
+                
+                # Save a copy of the report in the backend reports directory
+                backend_report_path = os.path.join(backend_reports_dir, f"{video_id}.json")
+                
+                # Write the JSON report to both locations
                 with open(abs_report_path, 'w', encoding='utf-8') as f:
                     json.dump(json_report, f, indent=2, ensure_ascii=False)
                 
+                with open(backend_report_path, 'w', encoding='utf-8') as f:
+                    json.dump(json_report, f, indent=2, ensure_ascii=False)
+                
                 print(f"JSON report saved to: {abs_report_path}")
+                print(f"JSON report also saved to backend reports: {backend_report_path}")
             else:
                 # Handle case where no reports were generated
+                error_data = {
+                    "error": "Failed to generate classroom reports",
+                    "status": "error",
+                    "message": f"No classroom reports were generated from the CSV data",
+                    "video_id": video_id
+                }
+                
                 with open(abs_report_path, 'w') as f:
-                    json.dump({
-                        "error": "Failed to generate classroom reports",
-                        "status": "error",
-                        "message": f"No classroom reports were generated from the CSV data",
-                        "video_id": video_id
-                    }, f)
+                    json.dump(error_data, f, indent=2)
+                
+                # Create backend reports directory and save error report there as well
+                backend_reports_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "reports")
+                os.makedirs(backend_reports_dir, exist_ok=True)
+                backend_report_path = os.path.join(backend_reports_dir, f"{video_id}.json")
+                
+                with open(backend_report_path, 'w') as f:
+                    json.dump(error_data, f, indent=2)
                 
             print("NLP processing finished.")
             
@@ -157,7 +206,7 @@ def process_video_task(video_id: str, video_path: str, upload_dir: str) -> None:
         # Update status after processing is done
         if os.path.exists(report_path):
             processing_status[video_id] = "completed"
-            print(f"Processing completed for video_id: {video_id}")
+            print(f"Processing completed for video_id: {video_id}, course: {course_name}, language: {language}")
         else:
             processing_status[video_id] = "error"
             print(f"Failed to generate report for video_id: {video_id}")
@@ -167,15 +216,25 @@ def process_video_task(video_id: str, video_path: str, upload_dir: str) -> None:
         processing_status[video_id] = "error"
         # Try to create an error report
         try:
+            error_data = {
+                "error": str(e),
+                "status": "error",
+                "message": "Failed to process video",
+                "video_id": video_id
+            }
+            
+            # Save in upload directory
             with open(os.path.join(upload_dir, f"{video_id}.json"), 'w') as f:
-                json.dump({
-                    "error": str(e),
-                    "status": "error",
-                    "message": "Failed to process video",
-                    "video_id": video_id
-                }, f)
-        except:
-            pass
+                json.dump(error_data, f, indent=2)
+                
+            # Also save in backend reports directory
+            backend_reports_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "reports")
+            os.makedirs(backend_reports_dir, exist_ok=True)
+            with open(os.path.join(backend_reports_dir, f"{video_id}.json"), 'w') as f:
+                json.dump(error_data, f, indent=2)
+                
+        except Exception as save_error:
+            print(f"Failed to save error report: {save_error}")
 
 def get_status(report_id: str) -> str:
     """Get the processing status of a video"""

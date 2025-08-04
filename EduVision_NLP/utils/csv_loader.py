@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 import logging
-import os
 
 class CSVLoader:
     """Handles loading and processing of CSV data from computer vision models."""
@@ -21,47 +20,13 @@ class CSVLoader:
     
     def load_csv(self, file_path: str) -> pd.DataFrame:
         """Load CSV file and return DataFrame."""
-        # Handle the case where the file might be a .txt instead of .csv
-        if not os.path.exists(file_path):
-            # Try alternative extensions
-            base_path = file_path.rsplit('.', 1)[0]
-            if os.path.exists(base_path + '.txt'):
-                file_path = base_path + '.txt'
-                print(f"CSV file not found. Using text file instead: {file_path}")
-            elif os.path.exists(base_path + '.csv'):
-                file_path = base_path + '.csv'
-                print(f"Using CSV file: {file_path}")
-        
-        # Load the CSV file
         try:
             df = pd.read_csv(file_path)
-            print(f"Successfully loaded data from {file_path}")
+            self.logger.info(f"Loaded CSV with {len(df)} records from {file_path}")
             return df
         except Exception as e:
-            # If standard CSV reading fails, try with different delimiters
-            try:
-                df = pd.read_csv(file_path, delimiter='\t')
-                print(f"Loaded data with tab delimiter from {file_path}")
-                return df
-            except Exception as e2:
-                print(f"Error loading CSV with standard and tab delimiters: {e}, {e2}")
-                # Try reading with different encodings
-                try:
-                    df = pd.read_csv(file_path, encoding='latin1')
-                    print(f"Loaded data with latin1 encoding from {file_path}")
-                    return df
-                except Exception as e3:
-                    print(f"All CSV loading attempts failed: {e3}")
-                    # Create a minimal dummy dataframe as fallback
-                    print(f"Creating dummy data for fallback")
-                    dummy_data = {
-                        'student_id': [1, 2, 3],
-                        'name': ['Student1', 'Student2', 'Student3'],
-                        'timestamp': [0, 0, 0],
-                        'looking_at_screen': [True, True, True],
-                        'distracted': [False, False, False]
-                    }
-                    return pd.DataFrame(dummy_data)
+            self.logger.error(f"Error loading CSV: {str(e)}")
+            raise
     
     def validate_csv_format(self, file_path: str) -> dict:
         """Validate CSV format and return validation results."""
@@ -293,4 +258,4 @@ class CSVLoader:
         except Exception as e:
             self.logger.error(f"Error applying course name: {str(e)}")
             raise
-
+    
