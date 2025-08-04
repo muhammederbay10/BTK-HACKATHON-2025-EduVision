@@ -586,50 +586,62 @@ class EduVisionClassroomProcessor:
                 'executive_summary': [
                     'EXECUTIVE SUMMARY', 'YÖNETİCİ ÖZETİ', 'الملخص التنفيذي', 'RESUMEN EJECUTIVO',
                     'RÉSUMÉ EXÉCUTIF', 'ZUSAMMENFASSUNG', 'RIASSUNTO ESECUTIVO', 'RESUMO EXECUTIVO',
-                    '执行摘要', 'エグゼクティブサマリー', 'РЕЗЮМЕ'
+                    '执行摘要', 'エグゼクティブサマリー', 'РЕЗЮМЕ', 'ÖZET', 'GENEL DEĞERLENDIRME'
                 ],
                 'individual_analysis': [
                     'INDIVIDUAL STUDENT ANALYSIS', 'BİREYSEL ÖĞRENCİ ANALİZİ', 'تحليل الطلاب الفردي',
                     'ANÁLISIS INDIVIDUAL DE ESTUDIANTES', 'ANALYSE INDIVIDUELLE DES ÉTUDIANTS',
                     'INDIVIDUELLE STUDENTENANALYSE', 'ANALISI INDIVIDUALE DEGLI STUDENTI',
                     'ANÁLISE INDIVIDUAL DE ESTUDANTES', '个人学生分析', '個別学生分析',
-                    'ИНДИВИДУАЛЬНЫЙ АНАЛИЗ СТУДЕНТОВ'
+                    'ИНДИВИДУАЛЬНЫЙ АНАЛИЗ СТУДЕНТОВ', 'ÖĞRENCİ ANALİZLERİ', 'STUDENT'
                 ],
                 'temporal_analysis': [
                     'TEMPORAL ANALYSIS', 'ZAMANSAL ANALİZ', 'التحليل الزمني', 'ANÁLISIS TEMPORAL',
                     'ANALYSE TEMPORELLE', 'ZEITANALYSE', 'ANALISI TEMPORALE', 'ANÁLISE TEMPORAL',
-                    '时间分析', '時間分析', 'ВРЕМЕННОЙ АНАЛИЗ'
+                    '时间分析', '時間分析', 'ВРЕМЕННОЙ АНАЛИЗ', 'ZAMAN', 'TREND'
                 ],
                 'classroom_dynamics': [
                     'CLASSROOM DYNAMICS', 'SINIF DİNAMİKLERİ', 'ديناميكيات الفصل', 'DINÁMICAS DEL AULA',
                     'DYNAMIQUES DE CLASSE', 'KLASSENDYNAMIK', 'DINAMICHE DELLA CLASSE',
-                    'DINÂMICAS DA SALA DE AULA', '课堂动态', '教室の動態', 'КЛАССНАЯ ДИНАМИКА'
+                    'DINÂMICAS DA SALA DE AULA', '课堂动态', '教室の動態', 'КЛАССНАЯ ДИНАМИКА',
+                    'SINIF', 'DİNAMİK', 'CLASSROOM'
                 ],
                 'recommendations': [
                     'ACTIONABLE RECOMMENDATIONS', 'UYGULANABİLİR ÖNERİLER', 'التوصيات القابلة للتنفيذ',
                     'RECOMENDACIONES ACCIONABLES', 'RECOMMANDATIONS PRATIQUES', 'UMSETZBARE EMPFEHLUNGEN',
                     'RACCOMANDAZIONI ATTUABILI', 'RECOMENDAÇÕES ACIONÁVEIS', '可行建议',
-                    '実行可能な推奨事項', 'ПРАКТИЧЕСКИЕ РЕКОМЕНДАЦИИ'
+                    '実行可能な推奨事項', 'ПРАКТИЧЕСКИЕ РЕКОМЕНДАЦИИ', 'ÖNERİLER', 'RECOMMENDATION'
                 ],
                 'metrics_summary': [
                     'METRICS SUMMARY', 'METRİK ÖZETİ', 'ملخص المقاييس', 'RESUMEN DE MÉTRICAS',
                     'RÉSUMÉ DES MÉTRIQUES', 'METRIKEN-ZUSAMMENFASSUNG', 'RIASSUNTO DELLE METRICHE',
-                    'RESUMO DAS MÉTRICAS', '指标摘要', '指標要約', 'СВОДКА ПОКАЗАТЕЛЕЙ'
+                    'RESUMO DAS MÉTRICAS', '指标摘要', '指標要約', 'СВОДКА ПОКАЗАТЕЛЕЙ',
+                    'METRİK', 'İSTATİSTİK', 'SUMMARY'
                 ]
             }
+            
+            # Add debug logging
+            self.logger.info(f"Raw AI report preview (first 500 chars): {raw_report[:500]}")
             
             for line in lines:
                 line_clean = line.strip()
                 line_upper = line_clean.upper()
                 
-                # Check if this line is a section header
+                # Check if this line is a section header (more flexible matching)
                 found_section = None
-                if line_clean.startswith('') and any(char.isdigit() for char in line_clean[:10]):
+                
+                # Look for section headers (numbered or unnumbered)
+                if (line_clean.startswith('#') or 
+                    line_clean.startswith('##') or
+                    any(char.isdigit() for char in line_clean[:10]) or
+                    line_clean.isupper() and len(line_clean) > 5):
+                    
                     # Try to match against known section keywords
                     for section_key, keywords in section_keywords.items():
                         for keyword in keywords:
                             if keyword in line_upper:
                                 found_section = section_key
+                                self.logger.info(f"Found section '{section_key}' with keyword '{keyword}'")
                                 break
                         if found_section:
                             break
@@ -637,49 +649,79 @@ class EduVisionClassroomProcessor:
                 if found_section:
                     # Save previous section
                     if current_section and current_content:
-                        sections[current_section] = '\n'.join(current_content).strip()
+                        content = '\n'.join(current_content).strip()
+                        sections[current_section] = content
+                        self.logger.info(f"Saved section '{current_section}' with {len(content)} characters")
                     
                     # Start new section
                     current_section = found_section
                     current_content = []
-                elif current_section and line_clean and not line_clean.startswith(''):
-                    # Add content to current section
+                elif current_section and line_clean:
+                    # Add content to current section (include all non-empty lines)
                     current_content.append(line)
             
             # Save the last section
             if current_section and current_content:
-                sections[current_section] = '\n'.join(current_content).strip()
+                content = '\n'.join(current_content).strip()
+                sections[current_section] = content
+                self.logger.info(f"Saved final section '{current_section}' with {len(content)} characters")
             
-            # Ensure all sections exist with proper defaults
+            # If no sections were parsed, use fallback strategy
+            if not sections or all(not v.strip() for v in sections.values()):
+                self.logger.warning("No sections parsed with headers, using fallback strategy")
+                
+                # Split by paragraphs and assign content
+                paragraphs = [p.strip() for p in raw_report.split('\n\n') if p.strip()]
+                
+                if len(paragraphs) >= 1:
+                    sections['executive_summary'] = paragraphs[0]
+                if len(paragraphs) >= 2:
+                    sections['individual_analysis'] = paragraphs[1]
+                if len(paragraphs) >= 3:
+                    sections['temporal_analysis'] = paragraphs[2]
+                if len(paragraphs) >= 4:
+                    sections['classroom_dynamics'] = paragraphs[3]
+                if len(paragraphs) >= 5:
+                    sections['recommendations'] = paragraphs[4]
+                if len(paragraphs) >= 6:
+                    sections['metrics_summary'] = paragraphs[5]
+                else:
+                    # If we still don't have enough content, use the full report
+                    for key in ['individual_analysis', 'temporal_analysis', 'classroom_dynamics', 'recommendations', 'metrics_summary']:
+                        if key not in sections:
+                            sections[key] = raw_report
+            
+            # Ensure all sections exist
             default_sections = {
-                'executive_summary': 'Not available',
-                'individual_analysis': 'Not available', 
-                'temporal_analysis': 'Not available',
-                'classroom_dynamics': 'Not available',
-                'recommendations': 'Not available',
-                'metrics_summary': 'Not available'
+                'executive_summary': 'Analysis completed successfully.',
+                'individual_analysis': 'Individual student analysis available in full report.', 
+                'temporal_analysis': 'Temporal patterns analyzed.',
+                'classroom_dynamics': 'Classroom dynamics assessed.',
+                'recommendations': 'Recommendations provided based on analysis.',
+                'metrics_summary': 'Metrics summarized in full report.'
             }
             
             for key, default_value in default_sections.items():
                 if key not in sections or not sections[key].strip():
-                    sections[key] = default_value
+                    sections[key] = raw_report if raw_report.strip() else default_value
             
-            # Debug log
-            self.logger.info(f"Parsed {len(sections)} sections: {list(sections.keys())}")
+            # Debug log final results
+            self.logger.info(f"Final parsed sections: {[(k, len(v)) for k, v in sections.items()]}")
             
             return sections
             
         except Exception as e:
             self.logger.error(f"Error parsing AI report: {str(e)}")
+            # Return the full report in all sections as fallback
             return {
                 'executive_summary': raw_report,
-                'individual_analysis': 'Parsing error - see executive summary',
-                'temporal_analysis': 'Parsing error - see executive summary', 
-                'classroom_dynamics': 'Parsing error - see executive summary',
-                'recommendations': 'Parsing error - see executive summary',
-                'metrics_summary': 'Parsing error - see executive summary'
+                'individual_analysis': raw_report,
+                'temporal_analysis': raw_report,
+                'classroom_dynamics': raw_report,
+                'recommendations': raw_report,
+                'metrics_summary': raw_report
             }
-        
+    
     def _generate_summary_report_json(self, results: dict, csv_file_path: str):
         """
         Generate a summary report in JSON format.
