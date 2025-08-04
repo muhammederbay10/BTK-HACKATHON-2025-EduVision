@@ -24,114 +24,12 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# Create logs directory required by NLP script
-LOGS_DIR = "logs"
-os.makedirs(LOGS_DIR, exist_ok=True)
-
-# Dictionary to store processing status
-processing_status = {}
-
-# Supported languages
-SUPPORTED_LANGUAGES = {
-    "english": "en",
-    "turkish": "tr", 
-    "arabic": "ar",
-    "spanish": "es",
-    "french": "fr",
-    "german": "de",
-    "italian": "it",
-    "portuguese": "pt",
-    "chinese": "zh",
-    "japanese": "ja",
-    "russian": "ru"
-}
-
-def process_video_task(video_id, video_path, course_name="API_Upload", language="english"):
-    """Process video in a separate thread"""
-    try:
-        processing_status[video_id] = "processing"
-        transcript_path = os.path.join(UPLOAD_DIR, f"{video_id}.txt")
-        report_path = os.path.join(UPLOAD_DIR, f"{video_id}.json")
-        
-        print(f"🎬 Processing video {video_id}")
-        print(f"📚 Course: '{course_name}'")
-        print(f"🌍 Language: {language}")
-        print(f"🧵 Background thread started")
-
-        # Use correct paths to scripts based on project structure
-        project_root = os.path.dirname(os.path.dirname(__file__))
-        cv_script = os.path.join(project_root, "computer-vision_integration", "attention_tracker.py")
-        
-        # Make sure the paths exist
-        if not os.path.exists(cv_script):
-            print(f"Warning: CV script not found at {cv_script}")
-            # Attempt to search for the script
-            for root, dirs, files in os.walk(project_root):
-                if "attention_tracker.py" in files:
-                    cv_script = os.path.join(root, "attention_tracker.py")
-                    print(f"Found CV script at: {cv_script}")
-                    break
-        
-        # Use the same approach as in test_integration.py
-        print(f"Running CV script: {cv_script}")
-        print(f"With args: --video_path {video_path} --output_csv {transcript_path}")
-        subprocess.run([
-            sys.executable, str(cv_script),
-            "--video_path", video_path,
-            "--output_csv", transcript_path
-        ], check=True)
-        print("Computer vision script finished.")
-        
-        print("Running NLP script...")
-        nlp_script = os.path.join(project_root, "EduVision NLP", "main.py")
-        
-        # Make sure the paths exist
-        if not os.path.exists(nlp_script):
-            print(f"Warning: NLP script not found at {nlp_script}")
-            # Attempt to search for the script
-            for root, dirs, files in os.walk(project_root):
-                if "main.py" in files and "NLP" in root:
-                    nlp_script = os.path.join(root, "main.py")
-                    print(f"Found NLP script at: {nlp_script}")
-                    break
-        
-        # Run NLP script with course name
-        print(f"Running NLP script: {nlp_script}")
-        print(f"With args: --csv_path {transcript_path} --course_name {course_name} --language {language}")
-        
-        # Set environment variable for logs directory to ensure NLP script uses correct logs path
-        # Create logs directories in all potential locations the NLP script might be looking for
-        nlp_logs_dir = os.path.join(project_root, "logs")
-        os.makedirs(nlp_logs_dir, exist_ok=True)
-        
-        # Also create logs dir in backend folder, which seems to be where the script is looking
-        backend_logs_dir = os.path.join(os.path.dirname(__file__), "logs")
-        os.makedirs(backend_logs_dir, exist_ok=True)
-        
-        # Create logs inside NLP directory as well
-        nlp_dir = os.path.dirname(nlp_script)
-        nlp_internal_logs_dir = os.path.join(nlp_dir, "logs")
-        os.makedirs(nlp_internal_logs_dir, exist_ok=True)
-        
-        # Create environment with custom LOGS_DIR
-        env = os.environ.copy()
-        env["LOGS_DIR"] = backend_logs_dir
-        
-        subprocess.run([
-            sys.executable, str(nlp_script),
-            "--csv_path", transcript_path,
-            "--course_name", course_name,
-            "--language", language
-        ], check=True, env=env)
-        print("NLP script finished.")
-        
-        # Update status after processing is done
-        processing_status[video_id] = "completed"
-        print(f"Processing completed for video_id: {video_id}, course: {course_name}, language: {language}")
-        
-    except Exception as e:
-        print(f"Error during processing video {video_id}: {e}")
-        processing_status[video_id] = "error"
+# Create logs and reports directories required by NLP script
+project_root = os.path.dirname(BASE_DIR)
+os.makedirs(os.path.join(project_root, "logs"), exist_ok=True)
+os.makedirs(os.path.join(project_root, "reports"), exist_ok=True)
+# Create reports directory in the backend folder too
+os.makedirs(os.path.join(BASE_DIR, "reports"), exist_ok=True)
 
 @app.post("/api/upload")
 async def upload_video(file: UploadFile = File(...), course_name: str = Query("API_Upload"), language: str = Query("english")):
@@ -154,35 +52,17 @@ async def upload_video(file: UploadFile = File(...), course_name: str = Query("A
             buffer.write(await file.read())
     print(f"Video saved to {video_path}")
     
-    # Initialize processing status
-    processing_status[video_id] = "pending"
-
-    # Validate language input
-    if language.lower() not in SUPPORTED_LANGUAGES:
-        print(f"⚠️ Unsupported language '{language}', defaulting to English.")
-        language = "english"
-    
     # Start processing in a separate thread
     thread = threading.Thread(
         target=process_video_task, 
-        args=(video_id, video_path, course_name, language)
+        args=(video_id, video_path, UPLOAD_DIR, course_name, language)
     )
     thread.daemon = True
     thread.start()
     
     # Return immediately with the video ID
-    return {"reportId": video_id, "courseName": course_name, "language": language}
+    return {"reportId": video_id}
 
-@app.post("/api/status/{report_id}")
-async def force_processing_status(report_id: str, force: str = Query(None)):
-    """Force update the processing status for a report"""
-    print(f"Forcing status for report_id: {report_id} to {force}")
-    
-    if force == "completed":
-        processing_status[report_id] = "completed"
-        return {"status": "completed", "forced": True}
-    else:
-        raise HTTPException(status_code=400, detail="Invalid force value")
 
 @app.get("/api/status/{report_id}")
 async def get_processing_status(report_id: str):
