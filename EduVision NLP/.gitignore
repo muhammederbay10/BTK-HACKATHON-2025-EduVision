@@ -1,7 +1,0 @@
-__pycache__/
-logs/
-reports/
-.env
-config.py
-.vscode/
-*.csv
