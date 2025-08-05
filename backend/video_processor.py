@@ -110,12 +110,9 @@ def process_video_task(video_id: str, video_path: str, upload_dir: str, course_n
             print(f"Course Name: {course_name}")
             print(f"Language: {language}")
             
-            # Get language code from language name
-            lang_code = SUPPORTED_LANGUAGES.get(language.lower(), "en")
-            
             # Process the CSV directly using the processor with course name and language
-            results = processor.process_csv_file(abs_csv_path, course_name=course_name, language=lang_code)
-            
+            results = processor.process_csv_file(abs_csv_path, course_name=course_name, language=language.lower())         
+
             # If we have classroom reports, use the first one to generate our JSON output
             if results['successful_reports'] > 0 and results['classroom_reports']:
                 report = results['classroom_reports'][0]
