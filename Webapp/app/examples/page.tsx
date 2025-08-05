@@ -27,7 +27,7 @@ interface Report {
   status: string;
 }
 
-export default function HistoryPage() {
+export default function ExamplesPage() {
   const [reports, setReports] = useState<Report[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
@@ -124,10 +124,10 @@ export default function HistoryPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-3">
             <HistoryIcon className="h-8 w-8 text-blue-600" />
-            Report History
+            Report Examples
           </h1>
           <p className="text-gray-600 dark:text-gray-300 mb-6">
-            View and analyze your past lesson engagement reports
+            View and analyze example lesson engagement reports
           </p>
 
           {/* Search */}
@@ -267,7 +267,7 @@ export default function HistoryPage() {
                             </Badge>
                           </div>
 
-                          <Link href={`/report/${report.id}`}>
+                          <Link href="http://localhost:3000/report/09311098-b1ea-4e32-842b-0af029475985">
                             <motion.div
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
@@ -290,7 +290,7 @@ export default function HistoryPage() {
                   <HistoryIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold mb-2">No Reports Found</h3>
                   <p className="text-gray-600 dark:text-gray-300 mb-6">
-                    {searchTerm ? 'No reports match your search.' : 'You haven\'t uploaded any videos yet.'}
+                    {searchTerm ? 'No reports match your search.' : 'No example reports available.'}
                   </p>
                   <Link href="/upload">
                     <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">

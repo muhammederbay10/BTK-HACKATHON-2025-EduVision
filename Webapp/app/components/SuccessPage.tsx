@@ -42,7 +42,7 @@ export default function SuccessPage({ reportId, message = "Your analysis is comp
                 onClick={() => {
                   console.log("Navigating to report page:", reportId);
                   // First verify the report exists
-                  fetch(`${config.apiUrl}/report/${reportId}`)
+                  fetch(`${config.apiUrl}api/report/${reportId}`)
                     .then(res => {
                       if (res.ok) {
                         router.push(`/report/${reportId}`);
