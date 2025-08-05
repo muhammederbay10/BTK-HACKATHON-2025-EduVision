@@ -39,15 +39,17 @@ if project_root not in sys.path:
 import importlib.util
 import importlib.machinery
 
-# Load attention_tracker
+# Construct the full path to the attention_tracker.py module
+cv_module_path = os.path.join(os.path.dirname(__file__), "computer-vision_integration")
 attention_tracker_path = os.path.join(cv_module_path, "attention_tracker.py")
+
 loader = importlib.machinery.SourceFileLoader("attention_tracker", attention_tracker_path)
 attention_tracker = loader.load_module()
 attention_tracker_main = attention_tracker.main
 
 # Load EduVisionClassroomProcessor 
-nlp_main_path = os.path.join(nlp_module_path, "main.py")
-loader = importlib.machinery.SourceFileLoader("nlp_main", nlp_main_path)
+nlp_module_path = os.path.join(os.path.dirname(__file__), "EduVision_NLP", "main.py")
+loader = importlib.machinery.SourceFileLoader("nlp_main", nlp_module_path)
 nlp_main = loader.load_module()
 EduVisionClassroomProcessor = nlp_main.EduVisionClassroomProcessor
 

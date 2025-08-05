@@ -1,0 +1,35 @@
+# OS/IDE
+.DS_Store
+*.swp
+*.swo
+*.swn
+*.bak
+*.tmp
+*.log
+node_modules/
+__pycache__/
+.vscode/
+.idea/
+
+# Python
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.env
+.env.*
+
+# Frontend
+Webapp/.next/
+Webapp/.turbo/
+Webapp/out/
+Webapp/node_modules/
+Webapp/package-lock.json
+
+# Git
+.git
+.gitignore
+
+# Misc
+docker-compose.yml
+Dockerfile.old
