@@ -66,7 +66,7 @@ export default function Home() {
             </motion.div>
           </Link>
           
-          <Link href="/history">
+          <Link href="/examples">
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button variant="outline" size="lg" className="border-blue-600 text-blue-600 hover:bg-blue-50">
                 <BarChart3Icon className="mr-2 h-5 w-5" />
