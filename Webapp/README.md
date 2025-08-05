@@ -58,8 +58,8 @@ cd backend
 source venv/bin/activate
 python app/main.py
 ```
-The backend API will be available at: `http://localhost:8000`
-- API documentation: `http://localhost:8000/docs`
+The backend API will be available at: `${NEXT_PUBLIC_API_URL}`
+- API documentation: `${NEXT_PUBLIC_API_URL}/docs`
 
 ### 2. Start the Frontend Server
 
@@ -132,6 +132,10 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
    ```
 
 3. **CORS issues**: The backend is configured to allow requests from `http://localhost:3000`. Update CORS settings in `backend/app/main.py` if using different ports.
+
+## Deployment
+
+For detailed deployment instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md).
 
 ## Contributing
 
