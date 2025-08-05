@@ -21,14 +21,15 @@ The system:
 ```
 computer_vision_integration/
 │
-├── frame_processor.py          # Main orchestrator for processing frames
-├── face_utils.py               # Face detection, cropping, ID assignment
-├── gaze_headpose.py            # Gaze direction & head pose estimation
-├── metrics_logger.py           # Metrics computation & CSV writing
-├── ocr_utils.py                # OCR name extraction
-├── config.py                   # Configurable parameters
-├── requirements.txt            # Python dependencies
-└── README.md                   # This file
+├── frame_processor.py      # Main orchestrator for processing frames
+├── face_utils.py           # Face detection, cropping, ID assignment
+├── metrics.py              # Gaze direction & head pose estimation
+├── csv_logger.py           # Metrics computation & CSV writing
+├── ocr_photo.py            # OCR name extraction
+├── id_manager.py           # Handles mapping between student IDs and their extracted names/photos
+├── main.py                 # Entry point; initializes modules and runs the tracking pipeline
+├── requirements.txt        # Python dependencies
+└── README.md               # This file
 ```
 
 ## Installation
