@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useRouter } from 'next/navigation';
+import { config } from '@/app/lib/config';
 import { 
   UploadIcon, 
   FileVideoIcon, 
@@ -101,7 +102,7 @@ export default function UploadPage() {
       console.log("Starting upload and processing...");
       
       // Upload file and start processing
-      const response = await fetch('http://localhost:8000/api/upload', {
+      const response = await fetch(`${config.apiUrl}/api/upload`, {
         method: 'POST',
         body: formData,
       });

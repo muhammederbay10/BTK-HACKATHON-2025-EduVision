@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircleIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { config } from '@/app/lib/config';
 
 interface SuccessPageProps {
   reportId: string;
@@ -41,7 +42,7 @@ export default function SuccessPage({ reportId, message = "Your analysis is comp
                 onClick={() => {
                   console.log("Navigating to report page:", reportId);
                   // First verify the report exists
-                  fetch(`http://localhost:8000/report/${reportId}`)
+                  fetch(`${config.apiUrl}/report/${reportId}`)
                     .then(res => {
                       if (res.ok) {
                         router.push(`/report/${reportId}`);
