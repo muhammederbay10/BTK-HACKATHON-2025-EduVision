@@ -69,7 +69,7 @@ Argument	Description
 
 Output
 CSV file with the following columns:
-```
+---
 | Column Name               | Description                                              |
 |---------------------------|----------------------------------------------------------|
 | `student_id`              | Unique ID per face                                       |
@@ -84,7 +84,7 @@ CSV file with the following columns:
 | `eye_closure_duration_sec`| (Placeholder) — to be implemented                        |
 | `focus_quality`           | (Placeholder for future focus score)                     |
 | `session_duration_minutes`| Duration since student's first frame                     |
-```
+---
 Face images saved in photo_id/ for each student
 Name-ID mapping in photo_id/id_name_mapping.json
 
