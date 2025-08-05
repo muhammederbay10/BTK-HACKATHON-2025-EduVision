@@ -3,7 +3,7 @@ import pandas as pd
 import os
 
 FIELDNAMES = [
-    "student_name",
+    "name",
     "student_id",
     "timestamp",
     "frame_idx",
