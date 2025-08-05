@@ -2,6 +2,8 @@
  * Utility functions for checking report status
  */
 
+import { config } from '@/app/lib/config';
+
 /**
  * Checks if a report is complete by checking multiple endpoints
  * @param reportId The ID of the report to check
@@ -13,13 +15,13 @@ export async function isReportComplete(reportId: string): Promise<boolean> {
 
     // First, check the status endpoint
     try {
-      const statusResponse = await fetch(`http://localhost:8000/api/status/${reportId}`);
+      const statusResponse = await fetch(`${config.apiUrl}/api/status/${reportId}`);
       if (statusResponse.ok) {
         const statusData = await statusResponse.json();
         if (statusData.status === "completed") {
           // If status is completed, try to fetch the report
           try {
-            const reportResponse = await fetch(`http://localhost:8000/report/${reportId}`);
+            const reportResponse = await fetch(`${config.apiUrl}/report/${reportId}`);
             if (reportResponse.ok) {
               console.log("Report exists, processing is complete");
               return true;
