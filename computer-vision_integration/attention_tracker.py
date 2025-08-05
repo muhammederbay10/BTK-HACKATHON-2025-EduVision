@@ -48,6 +48,7 @@ def setup_csv_output(csv_file_path=None):
         csv_file_path = "student_attention_log.csv"
     
     FIELDNAMES = [
+        "student_name",
         "student_id", 
         "timestamp", 
         "frame_idx", 
@@ -375,6 +376,14 @@ def main():
     parser.add_argument('--output_csv', type=str, default='student_attention_log.csv', help='Output CSV file path')
     
     args = parser.parse_args()
+
+    # Load existing ID-Name mapping (empty if none)
+    mapping_json_path = "photo_id/id_name_mapping.json"
+    if os.path.exists(mapping_json_path):
+        with open(mapping_json_path, 'r') as f:
+            id_name_mapping = json.load(f)
+    else:
+        id_name_mapping = {}
     
     # Setup CSV output
     csv_file_path, fieldnames, frame_idx = setup_csv_output(args.output_csv)
@@ -418,6 +427,11 @@ def main():
                             frame, face_landmarks, w, h, s_id,
                             mapping_json_path="photo_id/id_name_mapping.json", photo_dir=photo_dir
                         )
+
+                        # Refresh mapping so new name is immediately available
+                        with open(mapping_json_path, 'r') as f:
+                            id_name_mapping = json.load(f)
+
                     # Landmarks extraction
                     landmarks = {}
                     for i, lm in enumerate(face_landmarks.landmark):
@@ -442,8 +456,11 @@ def main():
                     a_score, distraction_events, yawning_count, closure_dur, session_duration, distraction_rate = compute_metrics(metrics)
                     # Placeholder for focus quality
                     focus_quality = ""
+
+                    student_name = id_name_mapping.get(s_id, "Unknown")
                     # Append to per-frame record
                     row_data.append({
+                        "student_name": student_name,
                         "student_id": s_id,
                         "timestamp": timestamp,
                         "frame_idx": frame_idx,
