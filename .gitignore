@@ -4,7 +4,13 @@ reports/
 .env
 config.py
 .vscode/
+test-data/
 *.csv
+*.png
+*.mp4
+*.jpg
+*.jpeg
+
 # Dependencies
 node_modules/
 /.pnp
