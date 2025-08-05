@@ -22,8 +22,20 @@ class GeminiReportGenerator:
         self.model_name = model_name
         self.logger = logging.getLogger(__name__)
 
-        # configure Gemini with Api key from config
-        genai.configure(api_key=Config.Gemini_API_KEY)
+        # Read key from Config, then fall back to env vars commonly used
+        api_key = getattr(Config, "GEMINI_API_KEY", None) or \
+                  getattr(Config, "Gemini_API_KEY", None) or \
+                  os.getenv("GEMINI_API_KEY") or \
+                  os.getenv("GOOGLE_API_KEY")
+
+        if not api_key:
+            # Helpful log but doesn't leak the key
+            self.logger.error("Gemini API key not found in Config or environment.")
+            raise RuntimeError(
+                "Missing Gemini API key. Set GEMINI_API_KEY (or GOOGLE_API_KEY) in the environment."
+            )
+
+        genai.configure(api_key=api_key)
         self.model = genai.GenerativeModel(self.model_name)
 
     def generate_report(self, prompt: str, temperature: float = 0.7) -> dict:
