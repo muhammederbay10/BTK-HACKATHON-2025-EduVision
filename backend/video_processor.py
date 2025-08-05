@@ -39,8 +39,10 @@ if project_root not in sys.path:
 import importlib.util
 import importlib.machinery
 
-# Load attention_tracker (now main.py)
-attention_tracker_path = os.path.join(cv_module_path, "main.py")
+# Load attention_tracker
+attention_tracker_path = os.path.join(cv_module_path, "attention_tracker.py")
+# Load attention_tracker
+attention_tracker_path = os.path.join(cv_module_path, "attention_tracker.py")
 
 # Construct the full path to the attention_tracker.py module
 cv_module_path = os.path.join(os.path.dirname(__file__), "computer-vision_integration")
