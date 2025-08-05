@@ -53,12 +53,12 @@ pip install -r requirements.txt
 ## Usage
 Run with a video file:
 ```
-python attention_tracker.py --video_path test-data/test_video.mp4 --output_csv output.csv
+python main.py --video_path test-data/test_video.mp4 --output_csv output.csv
 ```
 
 Run with live webcam:
 ```
-python attention_tracker.py --video_path "" --output_csv live_log.csv
+python main.py --video_path "" --output_csv live_log.csv
 ```
 Command-line arguments:
 
