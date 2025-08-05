@@ -5,6 +5,8 @@ reports/
 config.py
 .vscode/
 *.csv
+test-data/
+
 # Dependencies
 node_modules/
 /.pnp
