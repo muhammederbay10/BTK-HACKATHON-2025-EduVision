@@ -1,6 +1,7 @@
 # Computer Vision Integration
 
 ## Overview
+
 This module implements **multi-person real-time attention monitoring** using:
 - **MediaPipe** for face mesh detection  
 - **EasyOCR** for reading student names from ID cards/badges  
@@ -15,29 +16,26 @@ The system:
 5. Determines **attentive / not attentive** status  
 6. Logs all results into a **CSV file** for backend processing  
 
----
 
 ## Folder Structure
 ```
 computer_vision_integration/
 │
-├── frame_processor.py # Main orchestrator for processing frames
-├── face_utils.py # Face detection, cropping, ID assignment
-├── gaze_headpose.py # Gaze direction & head pose estimation
-├── metrics_logger.py # Metrics computation & CSV writing
-├── ocr_utils.py # OCR name extraction
-├── config.py # Configurable parameters
-├── requirements.txt # Python dependencies
-└── README.md # This file
+├── frame_processor.py          # Main orchestrator for processing frames
+├── face_utils.py               # Face detection, cropping, ID assignment
+├── gaze_headpose.py            # Gaze direction & head pose estimation
+├── metrics_logger.py           # Metrics computation & CSV writing
+├── ocr_utils.py                # OCR name extraction
+├── config.py                   # Configurable parameters
+├── requirements.txt            # Python dependencies
+└── README.md                   # This file
 ```
-
----
 
 ## Installation
 
 **1. Clone the repository**
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/muhammederbay10/BTK-HACKATHON-2025-EduVision.git
 cd computer_vision_integration
 ```
 **2. Create a virtual environment & activate it**
@@ -51,7 +49,7 @@ venv\Scripts\activate         # Windows
 pip install -r requirements.txt
 ```
 
-Usage
+## Usage
 Run with a video file:
 ```
 python frame_processor.py --video_path test-data/test_video.mp4 --output_csv output.csv
@@ -61,14 +59,13 @@ Run with live webcam:
 ```
 python frame_processor.py --video_path "" --output_csv live_log.csv
 ```
-Arguments:
+Command-line arguments:
 
-Argument	Description
---video_path	Path to input video file. Empty string ("") for webcam.
---output_csv	Path to output CSV log file.
+```--video_path```:	Path to input video file. Empty string ("") for webcam.
+```--output_csv```:	Path to output CSV log file.
 
-Output
-CSV file with the following columns:
+## Output
+Each run produces a CSV log with columns such as:
 ---
 | Column Name               | Description                                              |
 |---------------------------|----------------------------------------------------------|
@@ -85,118 +82,21 @@ CSV file with the following columns:
 | `focus_quality`           | (Placeholder for future focus score)                     |
 | `session_duration_minutes`| Duration since student's first frame                     |
 ---
-Face images saved in photo_id/ for each student
-Name-ID mapping in photo_id/id_name_mapping.json
+
+Additionally, cropped student face images are saved in ```photo_id/```, and name-to-ID mappings in ```photo_id/id_name_mapping.json```.
 
 ## Backend Integration
-The backend can:
 
-Periodically read the generated CSV for real-time metrics
-
-Map student IDs to photos using the JSON mapping
-
-Use the attention scores to generate reports or trigger alerts
+The backend server can periodically parse the CSV to collect real-time attention metrics, cross-reference IDs/photos with the JSON mapping, and use aggregate scores to issue reports or alerts. This design allows seamless integration into other educational, analytical, or monitoring platforms
 
 ## Notes
-EasyOCR is CPU-heavy; enable GPU by setting gpu=True in ocr_utils.py if available.
 
-Mediapipe face mesh runs in real-time for up to 15 faces, but increase max_num_faces in config.py if needed.
+- **Performance:** EasyOCR is CPU-intensive. To accelerate, enable GPU mode in ```ocr_photo.py``` by setting ```gpu=True``` if your hardware supports it.
+- **Scaling:** The system can track up to 15 faces in real time with default MediaPipe settings (adjustable in face_utils.py).
+- **Lighting:** Head pose estimation is most reliable in well-lit scenes.
 
-Head pose estimation uses a simple PnP model — works best with good lighting.
-
-## Future Improvements
-Add yawning & eye closure detection
-
-Integrate with an actual object tracker (e.g., SORT, DeepSORT) for even more robust ID assignment
-
-Stream results via WebSocket to backend in real-time
-
-## Module Explanations
-frame_processor.py
-The main entry point of the module.
-
-Reads frames from a video file or webcam
-
-Calls face_utils to detect & crop faces
-
-Calls ocr_utils to read student names (first-time detection)
-
-Calls gaze_headpose to estimate gaze direction & head orientation
-
-Updates attention metrics & sends them to metrics_logger
-
-Saves processed images & logs results
-
-face_utils.py
-Handles:
-
-Face detection using MediaPipe FaceMesh
-
-Cropping face regions for further analysis
-
-Assigning Student IDs to maintain identity across frames
-
-Handling multiple faces in real time
-
-gaze_headpose.py
-Responsible for:
-
-Gaze detection (looking left, right, forward, down)
-
-Head pose estimation (yaw, pitch, roll angles)
-
-Classifying if a person is attentive or not attentive
-
-Works in sync with face_utils to ensure correct face mapping
-
-metrics_logger.py
-Handles:
-
-Writing all attention metrics to CSV
-
-Tracking:
-
-Distraction events
-
-Yawning count
-
-Eye closure duration
-
-Attention score per student
-
-Session duration & focus quality
-
-ocr_utils.py
-Extracts student names from ID cards, badges, or name tags
-
-Uses EasyOCR with custom preprocessing to improve recognition
-
-Stores mapping between student_id and student_name in a JSON file
-
-config.py
-Holds all tweakable parameters:
-
-Face mesh settings
-
-OCR parameters
-
-Gaze & head pose thresholds
-
-Maximum allowed faces
-
-Paths for saving data
-
-## Error Handling
+## Troubleshooting
 If you encounter any issues:
-
-Check the requirements.txt for missing dependencies
-
-Make sure your Python version is >= 3.8
-
-Create an issue in the repository with:
-
-Steps to reproduce
-
-Error message
-
-Environment details
+- Double-check all dependencies are installed (```requirements.txt```)
+- Confirm you are using Python 3.11 or .10 for mediapipe support
+- For problems, please open an issue in the repository and include clear reproduction steps, the exact error message, and a brief environment description.
