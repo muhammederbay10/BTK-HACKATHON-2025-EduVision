@@ -1,4 +1,4 @@
-# main.py
+# attention_tracker.py
 import argparse
 import sys
 import traceback
