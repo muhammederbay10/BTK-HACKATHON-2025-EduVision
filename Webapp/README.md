@@ -66,8 +66,12 @@ cd backend
 source venv/bin/activate
 python app/main.py
 ```
+
 The backend API will be available at: `${NEXT_PUBLIC_API_URL}`
 - API documentation: `${NEXT_PUBLIC_API_URL}/docs`
+
+* API kullanılabilir olacak: `${NEXT_PUBLIC_API_URL}`
+* API dökümantasyonu: `${NEXT_PUBLIC_API_URL}/docs`
 
 ### 2. Frontend Sunucusunu Başlatın
 
@@ -155,20 +159,31 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
    source backend/venv/bin/activate
    ```
 
-3. **CORS issues**: The backend is configured to allow requests from `http://localhost:3000`. Update CORS settings in `backend/app/main.py` if using different ports.
+3. **CORS sorunları**: Backend, `http://localhost:3000` adresinden gelen istekleri kabul edecek şekilde ayarlı. Farklı port kullanıyorsanız `backend/app/main.py` dosyasındaki CORS ayarlarını güncelleyin.
 
+---
+
+## 🚀 Dağıtım
+
+Detaylı dağıtım adımları için bkz: [DEPLOYMENT.md](./DEPLOYMENT.md)
+
+---
+
+## 🤝 Katkıda Bulunma
+=======
 ## Deployment
 
 For detailed deployment instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md).
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
 
-## License
+1. Repositoriesi forkladıktan sonra
+2. Özellik dalı (feature branch) oluşturun
+3. Gerekli değişiklikleri yapın
+4. Test edin
+5. Pull request gönderin
 
-This project is licensed under the MIT License.
+---
+
+##
