@@ -13,7 +13,7 @@ Eğitim videolarında öğrenci dikkatini ve katılımını analiz eden yapay ze
 
 ## 📺[DEMO VİDEOSU İZLE (TIKLA).](https://drive.google.com/file/d/1dR9UlkWI5hdUMXJixfUeWgZC3cf_gshc/view?usp=sharing)
 
-## [CANLI DEMO (TIKLA).](btk-hackathon-2025-edu-vision.vercel.app)
+## [CANLI DEMO (TIKLA).](https://btk-hackathon-2025-edu-vision.vercel.app/)
 
 ---
 
