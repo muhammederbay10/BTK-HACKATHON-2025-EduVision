@@ -1,3 +1,29 @@
+/* Mask for horizontal fade effect on image carousel */
+.mask-image-horizontal {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black calc(25mm),
+    black calc(100% - 25mm),
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    black calc(25mm),
+    black calc(100% - 25mm),
+    transparent
+  );
+}
+/* Carousel infinite scroll animation */
+.animate-carousel {
+  animation: carousel-scroll 30s linear infinite;
+  will-change: transform;
+}
+@keyframes carousel-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(calc(-1 * var(--scroll-width, 0px))); }
+}
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

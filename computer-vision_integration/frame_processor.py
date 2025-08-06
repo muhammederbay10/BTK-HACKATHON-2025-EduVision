@@ -79,7 +79,7 @@ def process_frame(frame, face_mesh, mapping_json_path, id_name_mapping, csv_file
             student_name = id_name_mapping.get(s_id, "Unknown")
 
             row_data.append({
-                "student_name": student_name,
+                "name": student_name,
                 "student_id": s_id,
                 "timestamp": timestamp,
                 "frame_idx": frame_idx,

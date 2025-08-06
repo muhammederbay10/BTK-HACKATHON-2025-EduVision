@@ -24,6 +24,12 @@ export default function ProcessingPage({ reportId }: Props) {
 
   // Function to check if report exists directly
   const checkReportExists = useCallback(async () => {
+    // Don't check if already completed
+    if (status === 'completed') {
+      console.log("Status already completed, skipping report existence check");
+      return true;
+    }
+    
     try {
       setConnectionIssue(false);
       console.log("Checking if report exists directly for:", reportId);
@@ -33,6 +39,8 @@ export default function ProcessingPage({ reportId }: Props) {
         console.log("Report exists! Setting status to completed");
         setStatus('completed');
         setProgress(100);
+        // Immediately navigate to report when found
+        router.push(`/report/${reportId}`);
         return true;
       }
     } catch (err) {
@@ -40,7 +48,7 @@ export default function ProcessingPage({ reportId }: Props) {
       setConnectionIssue(true);
     }
     return false;
-  }, [reportId]);
+  }, [reportId, router, status]);
 
   // Handle navigation to report when complete
   const viewReport = useCallback(() => {
@@ -53,57 +61,48 @@ export default function ProcessingPage({ reportId }: Props) {
       return;
     }
     
+    // Skip processing if status is already completed
+    if (status === 'completed') {
+      console.log("Status already completed, skipping processing");
+      return;
+    }
+    
     console.log("Starting processing for reportId:", reportId);
     setStatus('processing');
     
     // Initialize the estimated time based on typical processing duration
     setEstimatedTimeRemaining(60); // Assume 60 seconds initially
     
-    // Use our utility to poll until the report is ready - THIS HANDLES ALL POLLING
+    // Use our utility to poll until the report is ready
     const cancelPolling = pollUntilComplete(reportId, () => {
       console.log("Report is complete (from utility)");
       setStatus('completed');
       setProgress(100);
       setEstimatedTimeRemaining(0);
-    }, 60, 6000); // Polling every 6 seconds
+    }, 60, 30000); // Polling every 30 seconds to reduce requests
     
-    // Update estimated time remaining
-    const timeRemainingInterval = setInterval(() => {
-      if (status !== 'completed' && estimatedTimeRemaining !== null && estimatedTimeRemaining > 0) {
-        setEstimatedTimeRemaining(prev => {
-          if (prev === null) return null;
-          return Math.max(0, prev - 1);
-        });
-        
-        // Keep track of polling attempts for UI feedback only
-        setPollAttempts(prev => prev + 1);
-      }
-    }, 1000);
-    
-    // Simulate progress even when waiting for backend
-    const progressInterval = setInterval(() => {
-      setProgress((prev) => {
-        // Don't go to 100% until we know processing is complete
-        if (status === 'completed') return 100;
-        if (prev >= 95) return 95;
-        
-        // After many polling attempts, speed up the progress
-        if (pollAttempts > 10) {
-          return prev + Math.random() * 5; // Move faster
-          
-          // Also reduce the estimated time more aggressively
-          setEstimatedTimeRemaining(prevTime => {
-            if (prevTime === null) return null;
-            return Math.max(0, prevTime - 2);
+    // Single interval for UI updates - much less frequent
+    const updateInterval = setInterval(() => {
+      // Check if we should continue updating UI
+      if (status === 'pending' || status === 'processing') {
+        // Update time remaining
+        if (estimatedTimeRemaining !== null && estimatedTimeRemaining > 0) {
+          setEstimatedTimeRemaining(prev => {
+            if (prev === null) return null;
+            return Math.max(0, prev - 5); // Decrease by 5 seconds at a time
           });
         }
-        return prev + Math.random() * 2;
-      });
-    }, 1000);
+        
+        // Update progress at moderate speed
+        setProgress((prev) => {
+          if (prev >= 85) return 85; // Cap at 85% until complete
+          return prev + Math.random() * 2; // Faster progress
+        });
+      }
+    }, 5000); // Run every 5 seconds for UI updates
 
     return () => {
-      clearInterval(progressInterval);
-      clearInterval(timeRemainingInterval);
+      clearInterval(updateInterval);
       cancelPolling();
     };
   }, [reportId, status, pollAttempts, estimatedTimeRemaining]);
@@ -265,7 +264,7 @@ export default function ProcessingPage({ reportId }: Props) {
                     <span>{getTimeRemainingText()}</span>
                   </div>
                   
-                  {progress > 40 && (
+                  {progress > 40 && (status === 'pending' || status === 'processing') && (
                     <div className="text-center mt-6">
                       <p className="text-sm text-gray-500 mb-2">
                         Taking longer than expected?

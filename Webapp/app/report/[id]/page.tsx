@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertCircleIcon, FileTextIcon, FileIcon, DownloadIcon, UsersIcon, PieChartIcon, LightbulbIcon, BarChartIcon } from 'lucide-react';
+import { config } from '@/app/lib/config';
 import dynamic from 'next/dynamic';
 import { PDFExportButton } from '@/components/pdf-export-button';
 
@@ -113,7 +114,7 @@ export default function ReportPage({ params }: ReportPageProps) {
         
         try {
           // First attempt: try to get the report directly
-          const response = await fetch(`http://localhost:8000/report/${reportId}`);
+          const response = await fetch(`${config.apiUrl}/report/${reportId}`);
           
           if (response.ok) {
             const data = await response.json();
@@ -131,7 +132,7 @@ export default function ReportPage({ params }: ReportPageProps) {
         
         // Second attempt: check the status endpoint
         try {
-          const statusResponse = await fetch(`http://localhost:8000/api/status/${reportId}`);
+          const statusResponse = await fetch(`${config.apiUrl}/api/status/${reportId}`);
           if (statusResponse.ok) {
             const statusData = await statusResponse.json();
             console.log("Status data:", statusData);
