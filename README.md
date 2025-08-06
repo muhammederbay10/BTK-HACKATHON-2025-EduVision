@@ -238,6 +238,4 @@ Ek olarak, `photo_id/` klasörüne yüz görselleri ve `id_name_mapping.json` do
 
 ## 📄 Lisans
 
-Bu proje MIT Lisansı ile lisanslanmıştır.
-
 Bu proje **MIT Lisansı** ile lisanslanmıştır.
