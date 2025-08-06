@@ -12,6 +12,11 @@ test-data/
 *.mp4
 *.jpg
 *.jpeg
+=======
+# *.png
+# *.mp4
+# *.jpg
+# *.jpeg
 
 # Dependencies
 node_modules/
