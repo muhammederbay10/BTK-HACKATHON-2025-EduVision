@@ -27,6 +27,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useLanguage } from "@/lib/language-context";
 import { useAuth } from "@/lib/auth-context";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -66,9 +68,9 @@ export default function Navbar() {
 
   // Define navigation links
   const navLinks = [
-    { name: t('navbar.home') || "Home", href: "/" },
-    { name: t('navbar.upload') || "Upload", href: "/upload" },
-    { name: t('navbar.examples') || "Examples", href: "/examples" },
+    { name: t('nav.home') || "Home", href: "/" },
+    { name: t('nav.upload') || "Upload", href: "/upload" },
+    { name: t('nav.examples') || "Examples", href: "/examples" },
   ];
 
   const isActiveLink = (path: string) => pathname === path;
@@ -96,8 +98,8 @@ export default function Navbar() {
             </motion.div>
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-1">
+          {/* Desktop Navigation - now shifted slightly to the right */}
+          <nav className="hidden md:flex items-center justify-center flex-grow mx-4 pl-16 space-x-4">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -115,6 +117,8 @@ export default function Navbar() {
 
           {/* Desktop Auth Buttons/User Menu */}
           <div className="hidden md:flex items-center space-x-4">
+            <ThemeToggle />
+            <LanguageSwitcher />
             {loading ? (
               // Show skeleton loader while checking authentication
               <div className="h-10 w-24 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse"></div>
@@ -294,6 +298,14 @@ export default function Navbar() {
                 </>
               ) : (
                 <div className="flex flex-col space-y-3 px-4">
+                  <div className="flex items-center justify-start mb-2">
+                    <LanguageSwitcher />
+                    <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Change Language</span>
+                  </div>
+                  <div className="flex items-center justify-start mb-2">
+                    <ThemeToggle />
+                    <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Change Theme</span>
+                  </div>
                   <Link href="/login" onClick={() => setIsOpen(false)}>
                     <Button
                       variant="outline"
