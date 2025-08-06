@@ -33,4 +33,4 @@ ENV PYTHONUNBUFFERED=1
 EXPOSE 8000
 
 # Start FastAPI with uvicorn
-CMD ["sh", "-c", "uvicorn backend.app:app --host 0.0.0.0 --port $PORT"]
+CMD ["uvicorn", "backend.app:app", "--host", "0.0.0.0", "--port", "8000"]
