@@ -2,6 +2,6 @@
 Computer Vision Integration Module for EduVision
 """
 
-from .attention_tracker import main
+from .main import main
 
 __all__ = ['main']
