@@ -7,12 +7,7 @@ config.py
 test-data/
 *.csv
 test-data/
-=======
-*.png
-*.mp4
-*.jpg
-*.jpeg
-=======
+
 # *.png
 # *.mp4
 # *.jpg
