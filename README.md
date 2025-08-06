@@ -11,8 +11,7 @@ Eğitim videolarında öğrenci dikkatini ve katılımını analiz eden yapay ze
 * **Backend (FastAPI)**: API sunucusu
 * **Frontend (Next.js)**: Kullanıcı arayüzü
 
-📺 Demo Videoyu İzle 
-(https://drive.google.com/file/d/1dR9UlkWI5hdUMXJixfUeWgZC3cf_gshc/view?usp=sharing)
+📺 Demo Videoyu İzle [DEMO.](https://drive.google.com/file/d/1dR9UlkWI5hdUMXJixfUeWgZC3cf_gshc/view?usp=sharing)
 
 ---
 
