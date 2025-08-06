@@ -5,6 +5,7 @@ import json
 import psycopg2
 from psycopg2 import sql
 import hashlib
+from dotenv import load_dotenv
 from fastapi import FastAPI, File, Form, UploadFile, HTTPException, Query, Cookie, Response, Depends # type: ignore
 from fastapi.middleware.cors import CORSMiddleware # type: ignore
 from fastapi.responses import RedirectResponse # type: ignore
@@ -35,16 +36,34 @@ os.makedirs(os.path.join(project_root, "reports"), exist_ok=True)
 # Create reports directory in the backend folder too
 os.makedirs(os.path.join(BASE_DIR, "reports"), exist_ok=True)
 
+# Load environment variables
+load_dotenv()
+
 # Database connection function
+import os
+import psycopg2
+from urllib.parse import urlparse
+from fastapi import HTTPException
+
 def get_db_connection():
     try:
+        # Retrieve the DATABASE_URL from environment variables
+        db_url = os.environ.get("DATABASE_URL")
+        if not db_url:
+            raise HTTPException(status_code=500, detail="Database URL not set")
+        
+        # Parse the URL into components
+        result = urlparse(db_url)
+        
+        # Connect to the PostgreSQL database
         connection = psycopg2.connect(
-            host="localhost",
-            database="postgres",
-            user="enes",
-            password="postgres",
-            port="5432"
+            host=result.hostname,
+            database=result.path[1:],  # Remove the leading '/' in the database name
+            user=result.username,
+            password=result.password,
+            port=result.port
         )
+        
         connection.autocommit = True
         return connection
     except Exception as e:
