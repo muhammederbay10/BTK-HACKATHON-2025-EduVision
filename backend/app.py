@@ -2,12 +2,17 @@ import os
 import uuid
 import threading
 import json
-from fastapi import FastAPI, File, Form, UploadFile, HTTPException, Query # type: ignore
+import psycopg2
+from psycopg2 import sql
+import hashlib
+from dotenv import load_dotenv
+from fastapi import FastAPI, File, Form, UploadFile, HTTPException, Query, Cookie, Response, Depends # type: ignore
 from fastapi.middleware.cors import CORSMiddleware # type: ignore
 from fastapi.responses import RedirectResponse # type: ignore
+from typing import Optional
 
 # Import video processor module
-from .video_processor import process_video_task, get_status, SUPPORTED_LANGUAGES
+from video_processor import process_video_task, get_status, SUPPORTED_LANGUAGES
 
 app = FastAPI()
 
@@ -30,6 +35,49 @@ os.makedirs(os.path.join(project_root, "logs"), exist_ok=True)
 os.makedirs(os.path.join(project_root, "reports"), exist_ok=True)
 # Create reports directory in the backend folder too
 os.makedirs(os.path.join(BASE_DIR, "reports"), exist_ok=True)
+
+# Load environment variables
+load_dotenv()
+
+# Database connection function
+import os
+import psycopg2
+from urllib.parse import urlparse
+from fastapi import HTTPException
+
+def get_db_connection():
+    try:
+        # Retrieve the DATABASE_URL from environment variables
+        db_url = os.environ.get("DATABASE_URL")
+        if not db_url:
+            raise HTTPException(status_code=500, detail="Database URL not set")
+        
+        # Parse the URL into components
+        result = urlparse(db_url)
+        
+        # Connect to the PostgreSQL database
+        connection = psycopg2.connect(
+            host=result.hostname,
+            database=result.path[1:],  # Remove the leading '/' in the database name
+            user=result.username,
+            password=result.password,
+            port=result.port
+        )
+        
+        connection.autocommit = True
+        return connection
+    except Exception as e:
+        print(f"Error connecting to database: {e}")
+        raise HTTPException(status_code=500, detail="Database connection error")
+
+# Password hashing function
+def hash_password(password: str) -> str:
+    # Create SHA-256 hash of the password
+    return hashlib.sha256(password.encode()).hexdigest()
+
+# Generate a random authentication token
+def generate_auth_token() -> str:
+    return str(uuid.uuid4())
 
 @app.post("/api/upload")
 async def upload_video(
@@ -127,6 +175,172 @@ async def get_supported_languages():
         "languages": [{"name": lang, "code": code} for lang, code in SUPPORTED_LANGUAGES.items()]
     }
 
+@app.post("/api/signup")
+async def signup(
+    name: str = Form(...),
+    email: str = Form(...),
+    password: str = Form(...),
+    response: Response = None
+):
+    """Register a new user"""
+    print(f"[DEBUG] Signup attempt for email: {email}")
+    # Hash the password
+    hashed_password = hash_password(password)
+    print(f"[DEBUG] Password hashed for user: {email}")
+    
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Check if user with this email already exists
+        print(f"[DEBUG] Checking if email already exists: {email}")
+        cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
+        if cursor.fetchone():
+            print(f"[DEBUG] Email already exists: {email}")
+            cursor.close()
+            conn.close()
+            raise HTTPException(status_code=400, detail="User with this email already exists")
+        
+        # Generate auth token
+        auth_token = generate_auth_token()
+        print(f"[DEBUG] Auth token generated for: {email}")
+        
+        # Create new user with auth token
+        print(f"[DEBUG] Inserting new user: {name}, {email}")
+        cursor.execute(
+            "INSERT INTO users (name, email, password, auth_token) VALUES (%s, %s, %s, %s) RETURNING id",
+            (name, email, hashed_password, auth_token)
+        )
+        user_id = cursor.fetchone()[0]
+        print(f"[DEBUG] User created with ID: {user_id}")
+        
+        # Generate and store auth token
+        auth_token = generate_auth_token()
+        print(f"[DEBUG] Updating auth token for user ID: {user_id}")
+        cursor.execute(
+            "UPDATE users SET auth_token = %s WHERE id = %s",
+            (auth_token, user_id)
+        )
+        
+        cursor.close()
+        conn.close()
+        
+        # Set auth cookie
+        print(f"[DEBUG] Setting auth cookie for user ID: {user_id}")
+        response.set_cookie(
+            key="auth_token", 
+            value=auth_token, 
+            httponly=True, 
+            secure=False,  # Set to True in production with HTTPS
+            max_age=604800  # 7 days
+        )
+        
+        print(f"[DEBUG] User registration successful: {user_id}")
+        return {"message": "User registered successfully", "userId": user_id}
+        
+    except Exception as e:
+        print(f"[ERROR] Error during signup: {e}")
+        raise HTTPException(status_code=500, detail="Registration failed")
+
+@app.post("/api/login")
+async def login(
+    email: str = Form(...),
+    password: str = Form(...),
+    response: Response = None
+):
+    """Log in a user"""
+    print(f"[DEBUG] Login attempt for email: {email}")
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Hash the provided password
+        hashed_password = hash_password(password)
+        print(f"[DEBUG] Password hashed for login attempt: {email}")
+        
+        # Find user
+        print(f"[DEBUG] Looking up user with email: {email}")
+        cursor.execute("SELECT id, password FROM users WHERE email = %s", (email,))
+        user = cursor.fetchone()
+        
+        if not user:
+            print(f"[DEBUG] User not found: {email}")
+            cursor.close()
+            conn.close()
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+        
+        if user[1] != hashed_password:
+            print(f"[DEBUG] Invalid password for user: {email}")
+            cursor.close()
+            conn.close()
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+        
+        user_id = user[0]
+        print(f"[DEBUG] Valid credentials for user ID: {user_id}")
+        
+        # Generate and store new auth token
+        auth_token = generate_auth_token()
+        print(f"[DEBUG] Generated auth token for user ID: {user_id}")
+        cursor.execute(
+            "UPDATE users SET auth_token = %s WHERE id = %s",
+            (auth_token, user_id)
+        )
+        print(f"[DEBUG] Updated auth token in database for user ID: {user_id}")
+        
+        cursor.close()
+        conn.close()
+        
+        # Set auth cookie
+        print(f"[DEBUG] Setting auth cookie for user ID: {user_id}")
+        response.set_cookie(
+            key="auth_token", 
+            value=auth_token, 
+            httponly=True, 
+            secure=False,  # Set to True in production with HTTPS
+            max_age=604800  # 7 days
+        )
+        
+        print(f"[DEBUG] Login successful for user ID: {user_id}")
+        return {"message": "Login successful", "userId": user_id}
+        
+    except Exception as e:
+        print(f"[ERROR] Error during login: {e}")
+        raise HTTPException(status_code=500, detail="Login failed")
+
+@app.post("/api/logout")
+async def logout(response: Response):
+    """Log out the current user"""
+    response.delete_cookie(key="auth_token")
+    return {"message": "Logged out successfully"}
+
+@app.get("/api/me")
+async def get_current_user(auth_token: str = Cookie(None)):
+    """Get current user information"""
+    if not auth_token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+        
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute("SELECT id, name, email FROM users WHERE auth_token = %s", (auth_token,))
+        user = cursor.fetchone()
+        
+        cursor.close()
+        conn.close()
+        
+        if not user:
+            raise HTTPException(status_code=401, detail="Invalid authentication")
+            
+        return {
+            "id": user[0],
+            "name": user[1],
+            "email": user[2]
+        }
+        
+    except Exception as e:
+        print(f"Error getting current user: {e}")
+        raise HTTPException(status_code=500, detail="Authentication error")
 
 if __name__ == "__main__":
     import uvicorn
