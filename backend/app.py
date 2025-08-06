@@ -18,8 +18,8 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=["https://btk-hackathon-2025-edu-vision.vercel.app"],  # ✅ Set exact origin
+    allow_credentials=True,  # ✅ Required when using cookies/sessions
     allow_methods=["*"],
     allow_headers=["*"],
 )
