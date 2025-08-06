@@ -31,17 +31,19 @@ def main():
                 frame, face_mesh, mapping_json_path, id_name_mapping, csv_file_path, frame_idx
             )
 
-            if not args.video_path:
-                cv2.imshow('Multi-Person Attention Tracker', frame)
-                if cv2.waitKey(1) & 0xFF == ord('q'):
-                    break
+            # Commented out for headless environment
+            # if not args.video_path:
+            #     cv2.imshow('Multi-Person Attention Tracker', frame)
+            #     if cv2.waitKey(1) & 0xFF == ord('q'):
+            #         break
+
 
     except Exception as e:
         print("Runtime error:", e)
         traceback.print_exc()
     finally:
         cap.release()
-        cv2.destroyAllWindows()
+        #cv2.destroyAllWindows()
         print(f"Done. Results saved to: {csv_file_path}")
 
 if __name__ == "__main__":

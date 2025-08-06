@@ -25,6 +25,7 @@ Webapp/.turbo/
 Webapp/out/
 Webapp/node_modules/
 Webapp/package-lock.json
+Webapp/
 
 # Git
 .git

@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware # type: ignore
 from fastapi.responses import RedirectResponse # type: ignore
 
 # Import video processor module
-from video_processor import process_video_task, get_status, SUPPORTED_LANGUAGES
+from .video_processor import process_video_task, get_status, SUPPORTED_LANGUAGES
 
 app = FastAPI()
 
@@ -129,5 +129,6 @@ async def get_supported_languages():
 
 
 if __name__ == "__main__":
-    import uvicorn # type: ignore
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    import uvicorn
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("backend.app:app", host="0.0.0.0", port=port)
