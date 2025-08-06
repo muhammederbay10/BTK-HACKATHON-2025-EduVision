@@ -12,13 +12,13 @@ from fastapi.responses import RedirectResponse # type: ignore
 from typing import Optional
 
 # Import video processor module
-from .video_processor import process_video_task, get_status, SUPPORTED_LANGUAGES
+from video_processor import process_video_task, get_status, SUPPORTED_LANGUAGES
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://btk-hackathon-2025-edu-vision.vercel.app"],  # ✅ Set exact origin
+    allow_origins=["https://btk-hackathon-2025-edu-vision.vercel.app", "http://localhost:3000"],  # ✅ Set exact origins
     allow_credentials=True,  # ✅ Required when using cookies/sessions
     allow_methods=["*"],
     allow_headers=["*"],
@@ -38,6 +38,9 @@ os.makedirs(os.path.join(BASE_DIR, "reports"), exist_ok=True)
 
 # Load environment variables
 load_dotenv()
+
+# Check if we're in production environment
+IS_PRODUCTION = os.getenv("ENV") == "production"
 
 # Database connection function
 import os
@@ -231,7 +234,8 @@ async def signup(
             key="auth_token", 
             value=auth_token, 
             httponly=True, 
-            secure=False,  # Set to True in production with HTTPS
+            secure=IS_PRODUCTION,
+            samesite="none" if IS_PRODUCTION else "lax",
             max_age=604800  # 7 days
         )
         
@@ -296,7 +300,8 @@ async def login(
             key="auth_token", 
             value=auth_token, 
             httponly=True, 
-            secure=False,  # Set to True in production with HTTPS
+            secure=IS_PRODUCTION,
+            samesite="none" if IS_PRODUCTION else "lax",
             max_age=604800  # 7 days
         )
         
