@@ -145,53 +145,6 @@ export default function Home() {
     }
   ];
 
-  // Pricing tiers
-  const pricingTiers = [
-    {
-      name: "Starter",
-      price: "$29",
-      period: "/month",
-      description: "Perfect for individual educators",
-      features: [
-        "Up to 30 students",
-        "Basic attention analytics",
-        "Weekly reports",
-        "Email support"
-      ],
-      popular: false
-    },
-    {
-      name: "Professional",
-      price: "$79",
-      period: "/month",
-      description: "Ideal for schools and institutions",
-      features: [
-        "Up to 200 students",
-        "Advanced AI insights",
-        "Real-time alerts",
-        "Custom reports",
-        "Priority support",
-        "API access"
-      ],
-      popular: true
-    },
-    {
-      name: "Enterprise",
-      price: "Custom",
-      period: "",
-      description: "For large organizations",
-      features: [
-        "Unlimited students",
-        "Custom AI models",
-        "White-label solution",
-        "Dedicated support",
-        "Custom integrations",
-        "SLA guarantee"
-      ],
-      popular: false
-    }
-  ];
-
   // Ref for the scrolling container
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -216,21 +169,21 @@ export default function Home() {
   }, [testimonials.length]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50/30 to-white dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen w-screen max-w-none bg-gradient-to-b from-blue-50/30 to-white dark:from-gray-900 dark:to-gray-800">
       {/* Hero Section - Enhanced */}
-      <section className="relative overflow-hidden">
-        {/* Background decorative elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-200/20 rounded-full blur-3xl"></div>
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-300/20 rounded-full blur-3xl"></div>
-        </div>
+      <section className="relative overflow-hidden w-screen max-w-none">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 overflow-hidden w-screen max-w-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-200/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-300/20 rounded-full blur-3xl"></div>
+      </div>
         
-        <div className="container mx-auto px-4 py-24 relative">
+        <div className="container mx-auto px-4 py-20 relative w-full max-w-none">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, ease: "easeOut" }}
-            className="text-center mb-16 max-w-5xl mx-auto"
+            className="text-center mb-0 max-w-5xl mx-auto"
           >
             {/* Badge */}
             <motion.div
@@ -239,9 +192,6 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="inline-block"
             >
-              <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-4 py-2 rounded-full text-sm font-medium mb-6 border border-blue-200 dark:border-blue-800">
-                AI-Powered Education Analytics
-              </div>
             </motion.div>
 
             <motion.h1 
@@ -259,7 +209,7 @@ export default function Home() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.4 }}
-              className="text-xl md:text-2xl text-gray-700 dark:text-gray-300 mb-10 leading-relaxed max-w-4xl mx-auto"
+              className="text-xl md:text-2xl text-gray-700 dark:text-gray-300 mb-10 leading-relaxed w-full"
             >
               {t('home.subtitle') || 'Advanced AI-powered attention tracking and engagement analytics for modern education'}
             </motion.p>
@@ -268,7 +218,7 @@ export default function Home() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.5 }}
-              className="flex flex-col sm:flex-row gap-6 justify-center items-center"
+              className="flex flex-col sm:flex-row gap-6 justify-center items-center -mb-12"
             >
               <Link href="/upload">
                 <motion.div 
@@ -296,23 +246,13 @@ export default function Home() {
                 </motion.div>
               </Link>
             </motion.div>
-
-            {/* Trust indicators */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-              className="mt-12 flex flex-wrap justify-center items-center gap-8 text-sm text-gray-600 dark:text-gray-400"
-            >
-
-            </motion.div>
           </motion.div>
         </div>
       </section>
 
       {/* Demo Images Strip - Enhanced */}
-      <section className="py-20 overflow-hidden">
-        <div className="container mx-auto px-4">
+      <section className="py-0 overflow-hidden">
+        <div className="w-full px-0">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -320,26 +260,21 @@ export default function Home() {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-800 dark:text-gray-200">
-              See Our AI in Action
-            </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-              Real examples of attention tracking and classroom analysis powered by cutting-edge computer vision
-            </p>
           </motion.div>
           
           <div className="relative">
-            {/* Enhanced gradient overlays */}
-            <div className="absolute left-0 top-0 w-32 h-full bg-gradient-to-r from-white dark:from-gray-900 via-white/80 dark:via-gray-900/80 to-transparent z-10 pointer-events-none"></div>
-            <div className="absolute right-0 top-0 w-32 h-full bg-gradient-to-l from-white dark:from-gray-900 via-white/80 dark:via-gray-900/80 to-transparent z-10 pointer-events-none"></div>
-            
-            {/* Scrolling images container */}
-            <motion.div
-              ref={scrollRef}
-              className="flex gap-8 animate-carousel"
-              style={{ width: 'max-content' }}
-              initial={{ x: 0 }}
-            >
+            {/* Enhanced gradient overlays - even higher opacity for stronger fade */}
+            <div className="absolute left-0 top-0 w-32 h-full bg-gradient-to-r from-blue-50/95 dark:from-gray-900/95 via-blue-50/98 dark:via-gray-900/98 to-transparent z-20 pointer-events-none"></div>
+            <div className="absolute right-0 top-0 w-32 h-full bg-gradient-to-l from-blue-50/95 dark:from-gray-900/95 via-blue-50/98 dark:via-gray-900/98 to-transparent z-20 pointer-events-none"></div>
+            {/* Container with mask for better fade effect */}
+            <div className="mask-image-horizontal w-full">
+              {/* Scrolling images container */}
+              <motion.div
+                ref={scrollRef}
+                className="flex gap-8 animate-carousel w-full"
+                style={{ minWidth: '100vw' }}
+                initial={{ x: 0 }}
+              >
               {[...demoImages, ...demoImages].map((image, index) => (
                 <motion.div
                   key={index}
@@ -365,6 +300,7 @@ export default function Home() {
                 </motion.div>
               ))}
             </motion.div>
+          </div>
           </div>
           
           
@@ -453,7 +389,7 @@ export default function Home() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
             viewport={{ once: true }}
-            className="text-center mt-16"
+            className="text-center mt-16 -mb-7"
           >
             <p className="text-xl text-gray-600 dark:text-gray-400 mb-6">
               Ready to transform your online classroom experience?
@@ -470,8 +406,13 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Dividing line between sections */}
+      <div className="w-full flex justify-center">
+        <div className="h-0.5 w-2/3 bg-gradient-to-r from-blue-200 via-blue-400 to-blue-200 dark:from-gray-700 dark:via-blue-800 dark:to-gray-700 rounded-full my-12"></div>
+      </div>
+
       {/* Enhanced Features Grid */}
-      <section className="py-20 bg-gray-50/50 dark:bg-gray-800/30">
+      <section className="py-19 bg-gray-50/50 dark:bg-gray-800/30">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -554,7 +495,7 @@ export default function Home() {
               >
                 <div className="w-48 h-48 rounded-full overflow-hidden mb-6 border-4 border-blue-100 dark:border-blue-900 shadow-xl">
                   <img
-                    src="/images/team/enes.jpg"
+                    src="/images/Enes.jpeg"
                     alt="Enes Halit"
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -563,14 +504,14 @@ export default function Home() {
                   />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-2">Enes Halit</h3>
-                <p className="text-blue-600 dark:text-blue-400 font-medium mb-4">Software Developer</p>
+                <p className="text-blue-600 dark:text-blue-400 font-medium mb-4">Full-Stack Developer</p>
                 <div className="flex space-x-3">
-                  <a href="#" className="text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-300 transition-colors">
+                  <a href="https://github.com/Enes830" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-300 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
                       <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
                     </svg>
                   </a>
-                  <a href="#" className="text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-300 transition-colors">
+                  <a href="https://www.linkedin.com/in/enes-halit-4361071a8/" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-300 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
                       <path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854V1.146zm4.943 12.248V6.169H2.542v7.225h2.401zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248-.822 0-1.359.54-1.359 1.248 0 .694.521 1.248 1.327 1.248h.016zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016a5.54 5.54 0 0 1 .016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225h2.4z"/>
                     </svg>
@@ -589,23 +530,23 @@ export default function Home() {
               >
                 <div className="w-48 h-48 rounded-full overflow-hidden mb-6 border-4 border-blue-100 dark:border-blue-900 shadow-xl">
                   <img
-                    src="/images/team/mohamad.jpg"
-                    alt="Mohamad Alnahal"
+                    src="/images/Mohammed.jpeg"
+                    alt="Muhammed Erbay"
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      e.currentTarget.src = `https://ui-avatars.com/api/?name=Mohamad+Alnahal&background=0062ff&color=fff&size=256`;
+                      e.currentTarget.src = `https://ui-avatars.com/api/?name=Muhammed+Erbay&background=0062ff&color=fff&size=256`;
                     }}
                   />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-2">Mohamad Alnahal</h3>
-                <p className="text-blue-600 dark:text-blue-400 font-medium mb-4">Software Developer</p>
+                <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-2">Muhammed Erbay</h3>
+                <p className="text-blue-600 dark:text-blue-400 font-medium mb-4">AI Engineer</p>
                 <div className="flex space-x-3">
-                  <a href="#" className="text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-300 transition-colors">
+                  <a href="https://github.com/muhammederbay10" className="text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-300 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
                       <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
                     </svg>
                   </a>
-                  <a href="#" className="text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-300 transition-colors">
+                  <a href="https://www.linkedin.com/in/muhammed-erbay-00811422a/" className="text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-300 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
                       <path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854V1.146zm4.943 12.248V6.169H2.542v7.225h2.401zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248-.822 0-1.359.54-1.359 1.248 0 .694.521 1.248 1.327 1.248h.016zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016a5.54 5.54 0 0 1 .016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225h2.4z"/>
                     </svg>
@@ -624,7 +565,7 @@ export default function Home() {
               >
                 <div className="w-48 h-48 rounded-full overflow-hidden mb-6 border-4 border-blue-100 dark:border-blue-900 shadow-xl">
                   <img
-                    src="/images/team/osama.jpg"
+                    src="/images/Osama.jpg"
                     alt="Osama Elbagory"
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -633,14 +574,14 @@ export default function Home() {
                   />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-2">Osama Elbagory</h3>
-                <p className="text-blue-600 dark:text-blue-400 font-medium mb-4">Software Developer</p>
+                <p className="text-blue-600 dark:text-blue-400 font-medium mb-4">Computer Vision Engineer</p>
                 <div className="flex space-x-3">
-                  <a href="#" className="text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-300 transition-colors">
+                  <a href="https://github.com/O-sama2004" className="text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-300 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
                       <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
                     </svg>
                   </a>
-                  <a href="#" className="text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-300 transition-colors">
+                  <a href="https://www.linkedin.com/in/osama-elbagory/" className="text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-300 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
                       <path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854V1.146zm4.943 12.248V6.169H2.542v7.225h2.401zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248-.822 0-1.359.54-1.359 1.248 0 .694.521 1.248 1.327 1.248h.016zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016a5.54 5.54 0 0 1 .016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225h2.4z"/>
                     </svg>
