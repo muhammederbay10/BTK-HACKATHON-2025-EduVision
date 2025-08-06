@@ -1,57 +1,65 @@
-# EduVision - Attention Tracking Platform
+# EduVision - Dikkat Takip Platformu
 
-An AI-powered platform for analyzing student attention and engagement in educational videos.
+Eğitim videolarında öğrenci dikkatini ve katılımını analiz eden yapay zekâ destekli bir platform.
 
-## Project Structure
+---
+
+## 📁 Proje Yapısı
 
 ```
 project/
-├── app/                    # Next.js frontend application
-├── backend/               # FastAPI backend server
-├── components/            # React UI components
-├── lib/                   # Utility functions
-└── hooks/                 # Custom React hooks
+├── app/            # Next.js frontend uygulaması
+├── backend/        # FastAPI backend sunucusu
+├── components/     # React bileşenleri
+├── lib/            # Yardımcı fonksiyonlar
+└── hooks/          # Özel React hook'ları
 ```
 
-## Prerequisites
+---
 
-- **Node.js** (version 18 or higher)
-- **Python** (version 3.8 or higher)
-- **npm** or **yarn**
+## 🔧 Gereksinimler
 
-## Installation & Setup
+* **Node.js** (sürüm 18 veya üstü)
+* **Python** (sürüm 3.8 veya üstü)
+* **npm** veya **yarn**
 
-### 1. Frontend Setup (Next.js)
+---
 
-Navigate to the project root directory and install dependencies:
+## ⚙️ Kurulum ve Başlatma
+
+### 1. Frontend Kurulumu (Next.js)
+
+Proje kök dizinine gidip bağımlılıkları yükleyin:
 
 ```bash
 cd /path/to/project
 npm install
 ```
 
-### 2. Backend Setup (Python/FastAPI)
+### 2. Backend Kurulumu (Python/FastAPI)
 
-Navigate to the backend directory and set up a virtual environment:
+Backend klasörüne geçip sanal ortam oluşturun:
 
 ```bash
 cd backend
 python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate  # Windows: venv\Scripts\activate
 ```
 
-Install Python dependencies:
+Python bağımlılıklarını yükleyin:
 
 ```bash
 pip install --upgrade pip
 pip install fastapi uvicorn sqlalchemy python-multipart pydantic
 ```
 
-## Running the Application
+---
 
-### 1. Start the Backend Server
+## ▶️ Uygulamayı Çalıştırma
 
-From the `backend` directory with the virtual environment activated:
+### 1. Backend Sunucusunu Başlatın
+
+`backend` klasöründen (sanal ortam aktifken):
 
 ```bash
 cd backend
@@ -61,72 +69,88 @@ python app/main.py
 The backend API will be available at: `${NEXT_PUBLIC_API_URL}`
 - API documentation: `${NEXT_PUBLIC_API_URL}/docs`
 
-### 2. Start the Frontend Server
+### 2. Frontend Sunucusunu Başlatın
 
-From the project root directory:
+Proje kök dizininden:
 
 ```bash
 npm run dev
 ```
 
-The frontend application will be available at: `http://localhost:3000`
+* Frontend: `http://localhost:3000`
 
-## Features
+---
 
-- **Video Upload**: Upload educational videos for analysis
-- **Attention Tracking**: AI-powered analysis of student engagement
-- **Real-time Processing**: Track analysis progress with live updates
-- **Detailed Reports**: Comprehensive insights and recommendations
-- **History Management**: View and manage previous analyses
+## 🚀 Özellikler
 
-## API Endpoints
+* 🎥 **Video Yükleme**: Eğitim videolarını yükleyin
+* 👁 **Dikkat Takibi**: Öğrenci dikkatini yapay zekâ ile analiz eder
+* 🔄 **Gerçek Zamanlı İşleme**: Canlı ilerleme takibi
+* 📊 **Detaylı Raporlar**: Kapsamlı analizler ve öneriler
+* 🗂 **Geçmiş Yönetimi**: Önceki analizlere erişim
 
-- `GET /` - Health check
-- `POST /api/upload` - Upload video for analysis
-- `GET /api/report/{report_id}` - Get detailed report
-- `GET /api/reports` - List all reports
-- `GET /api/processing/{report_id}` - Get processing status
+---
 
-## Development
+## 📡 API Uç Noktaları
 
-### Frontend Development
+* `GET /` – Sağlık kontrolü
+* `POST /api/upload` – Video yüklemesi
+* `GET /api/report/{report_id}` – Raporu görüntüle
+* `GET /api/reports` – Tüm raporları listele
+* `GET /api/processing/{report_id}` – İşlenme durumu
+
+---
+
+## 🧑‍💻 Geliştirme
+
+### Frontend Geliştirme
+
 ```bash
-npm run dev     # Start development server
-npm run build   # Build for production
-npm run start   # Start production server
-npm run lint    # Run ESLint
+npm run dev     # Geliştirme sunucusunu başlat
+npm run build   # Üretim için derle
+npm run start   # Üretim sunucusunu başlat
+npm run lint    # ESLint çalıştır
 ```
 
-### Backend Development
+### Backend Geliştirme
+
 ```bash
-# With virtual environment activated
+# Sanal ortam aktifken
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-## Technology Stack
+---
+
+## 🧱 Teknoloji Yığını
 
 ### Frontend
-- **Next.js 13** - React framework
-- **TypeScript** - Type safety
-- **Tailwind CSS** - Styling
-- **Radix UI** - Component library
-- **Framer Motion** - Animations
+
+* **Next.js 13** – React framework
+* **TypeScript** – Tür güvenliği
+* **Tailwind CSS** – Stil düzeni
+* **Radix UI** – Bileşen kütüphanesi
+* **Framer Motion** – Animasyonlar
 
 ### Backend
-- **FastAPI** - Python web framework
-- **Uvicorn** - ASGI server
-- **Pydantic** - Data validation
-- **SQLAlchemy** - Database ORM
 
-## Troubleshooting
+* **FastAPI** – Python web framework
+* **Uvicorn** – ASGI sunucusu
+* **Pydantic** – Veri doğrulama
+* **SQLAlchemy** – Veritabanı ORM
 
-### Common Issues
+---
 
-1. **Port conflicts**: If ports 3000 or 8000 are in use, modify the configuration:
-   - Frontend: Set `PORT=3001` environment variable
-   - Backend: Change port in `app/main.py`
+## 🛠️ Sorun Giderme
 
-2. **Python virtual environment**: Always activate the virtual environment before running backend commands:
+### Yaygın Sorunlar
+
+1. **Port çakışması**: 3000 veya 8000 portları doluysa:
+
+   * Frontend: `PORT=3001` ortam değişkeniyle çalıştırın
+   * Backend: `app/main.py` içindeki portu değiştirin
+
+2. **Python sanal ortamı**: Backend komutlarını çalıştırmadan önce sanal ortamı aktifleştirin:
+
    ```bash
    source backend/venv/bin/activate
    ```
