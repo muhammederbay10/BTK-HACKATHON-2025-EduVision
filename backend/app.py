@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware # type: ignore
 from fastapi.responses import RedirectResponse # type: ignore
 
 # Import video processor module
-from video_processor import process_video_task, get_status, SUPPORTED_LANGUAGES
+from .video_processor import process_video_task, get_status, SUPPORTED_LANGUAGES
 
 app = FastAPI()
 
