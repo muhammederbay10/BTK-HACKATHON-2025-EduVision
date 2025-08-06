@@ -1,6 +1,6 @@
 # EduVision - Dikkat Takip Platformu
 
-EduVision, öğretmenlerle birebir görüşmeler sonucunda özellikle online eğitimde dikkat takibinin ciddi bir sorun olduğunu gözlemleyen İskenderiye AI takımı tarafından geliştirilmiştir. Online derslerde öğretmenle, fiziksel sınıfta olduğu gibi öğrencilerin dikkat durumunu doğrudan gözlemleyemekte zorluk çekiyor ve sınıf içi etkileşimi kaybetmektedir. Bu nedenle dikkat kaybı anlarının tespiti kritik hâle gelmektedir. Projede, öğrencilerin eğitim videoları izlerken ne kadar dikkatli olduklarını anlık olarak analiz eden ve öğretmenlere kapsamlı geri bildirim sağlayan bir sistem geliştirildi.
+EduVision, öğretmenlerle birebir görüşmeler sonucunda özellikle online eğitimde dikkat takibinin ciddi bir sorun olduğunu gözlemleyen İskenderiye AI takımı tarafından geliştirilmiştir. Online derslerde öğretmenle, fiziksel sınıfta olduğu gibi öğrencilerin dikkat durumunu doğrudan gözlemleyemekte zorluk çekiyor ve sınıf içi etkileşimi kaybetmektedir. Bu nedenle dikkat kaybı anlarının tespiti kritik hâle gelmektedir. Projede, öğrencilerin eğitim videoları izlerken ne kadar dikkatli olduklarını anlık olarak analiz eden ve öğretmenlere kapsamlı geri bildirim ve özet rapor sağlayan bir GEMINI API (LLM) kullandık.
 
 Temel amacımız; öğretmenlerin, hangi zaman aralıklarında ve neden öğrencilerin dikkatini kaybettiğini görebilmesi ve buna göre içeriklerini veya sunum yöntemlerini optimize edebilmesini sağlamaktır.
 
@@ -10,6 +10,9 @@ Eğitim videolarında öğrenci dikkatini ve katılımını analiz eden yapay ze
 * **NLP Modülü (Gemini API)**: Yapay zekâ destekli sınıf analiz raporlama
 * **Backend (FastAPI)**: API sunucusu
 * **Frontend (Next.js)**: Kullanıcı arayüzü
+
+📺 Demo Videoyu İzle 
+(https://drive.google.com/file/d/1dR9UlkWI5hdUMXJixfUeWgZC3cf_gshc/view?usp=sharing)
 
 ---
 
