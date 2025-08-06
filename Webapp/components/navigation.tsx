@@ -11,7 +11,7 @@ import { LanguageSwitcher } from '@/components/language-switcher';
 import { 
   UploadIcon, 
   BarChart3Icon, 
-  HistoryIcon, 
+  LayoutGridIcon, 
   EyeIcon 
 } from 'lucide-react';
 
@@ -22,8 +22,7 @@ export function Navigation() {
 
   const navItems = [
     { href: '/upload', label: t('nav.upload'), icon: UploadIcon },
-    { href: '/history', label: t('nav.history'), icon: HistoryIcon },
-    { href: '/about', label: t('nav.about'), icon: BarChart3Icon },
+    { href: '/examples', label: t('nav.examples'), icon: LayoutGridIcon },
   ];
 
   return (

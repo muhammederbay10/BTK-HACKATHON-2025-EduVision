@@ -67,6 +67,9 @@ source venv/bin/activate
 python app/main.py
 ```
 
+The backend API will be available at: `${NEXT_PUBLIC_API_URL}`
+- API documentation: `${NEXT_PUBLIC_API_URL}/docs`
+
 * API kullanılabilir olacak: `${NEXT_PUBLIC_API_URL}`
 * API dökümantasyonu: `${NEXT_PUBLIC_API_URL}/docs`
 
@@ -167,6 +170,13 @@ Detaylı dağıtım adımları için bkz: [DEPLOYMENT.md](./DEPLOYMENT.md)
 ---
 
 ## 🤝 Katkıda Bulunma
+=======
+## Deployment
+
+For detailed deployment instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md).
+
+## Contributing
+
 
 1. Repositoriesi forkladıktan sonra
 2. Özellik dalı (feature branch) oluşturun
