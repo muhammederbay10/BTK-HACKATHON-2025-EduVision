@@ -1,103 +1,102 @@
-# Computer Vision Integration
+# Bilgisayarla Görü Entegrasyonu
 
-## Overview
+## Genel Bakış
 
-This module implements **multi-person real-time attention monitoring** using:
-- **MediaPipe** for face mesh detection  
-- **EasyOCR** for reading student names from ID cards/badges  
-- **OpenCV** for image processing & head pose estimation  
-- **Custom logic** for gaze detection, attention scoring, and session metrics logging  
+Bu modül **çoklu kişi gerçek zamanlı dikkat takibi** uygular:  
+- **MediaPipe** ile yüz ağı tespiti  
+- **EasyOCR** ile öğrenci adlarının kimlik kartı/rozetlerden okunması  
+- **OpenCV** ile görüntü işleme ve kafa poz tahmini  
+- **Özel mantık** ile bakış yönü tespiti, dikkat puanlama ve oturum metriklerinin kaydı  
 
-The system:
-1. Detects faces in frames (video file or webcam)  
-2. Assigns a unique **Student ID** per person  
-3. Reads the **student name** using OCR (first appearance only)  
-4. Tracks **gaze direction** & **head orientation**  
-5. Determines **attentive / not attentive** status  
-6. Logs all results into a **CSV file** for backend processing  
+Sistem:  
+1. Karelerdeki yüzleri (video dosyası veya webcam) algılar  
+2. Her kişiye benzersiz bir **Öğrenci ID’si** atar  
+3. **Öğrenci adını** OCR ile okur (yalnızca ilk göründüğünde)  
+4. **Bakış yönünü** ve **kafa pozunu** takip eder  
+5. **Dikkatli / dikkatsiz** durumunu belirler  
+6. Tüm sonuçları **CSV dosyasına** kaydeder (backend işlemeye hazır)  
 
-
-## Folder Structure
+## Klasör Yapısı
 ```
 computer_vision_integration/
 │
-├── frame_processor.py      # Main orchestrator for processing frames
-├── face_utils.py           # Face detection, cropping, ID assignment
-├── metrics.py              # Gaze direction & head pose estimation
-├── csv_logger.py           # Metrics computation & CSV writing
-├── ocr_photo.py            # OCR name extraction
-├── id_manager.py           # Handles mapping between student IDs and their extracted names/photos
-├── main.py                 # Entry point; initializes modules and runs the tracking pipeline
-├── requirements.txt        # Python dependencies
-└── README.md               # This file
+├── frame_processor.py    # Kare işleme ana yöneticisi
+├── face_utils.py         # Yüz algılama, kırpma, ID atama
+├── metrics.py            # Bakış yönü ve kafa poz tahmini
+├── csv_logger.py         # Metrik hesaplama ve CSV yazma
+├── ocr_photo.py          # OCR ile isim çıkarma
+├── id_manager.py         # ID ile çıkarılan isim/foto eşleşmelerini yönetir
+├── main.py               # Giriş noktası; modülleri başlatır ve takip hattını çalıştırır
+├── requirements.txt      # Python bağımlılıkları
+└── README.md             # Bu dosya
 ```
 
-## Installation
+## Kurulum
 
-**1. Clone the repository**
+**1. Depoyu klonlayın**
 ```bash
 git clone https://github.com/muhammederbay10/BTK-HACKATHON-2025-EduVision.git
 cd computer_vision_integration
 ```
-**2. Create a virtual environment & activate it**
+**2. Sanal ortam oluşturun ve etkinleştirin**
 ```
 python -m venv venv
 source venv/bin/activate      # Linux/Mac
 venv\Scripts\activate         # Windows
 ```
-**3. Install dependencies**
+**3. Bağımlılıkları yükleyin**
 ```
 pip install -r requirements.txt
 ```
 
-## Usage
-Run with a video file:
+## Kullanım
+Video dosyası ile çalıştırma:
 ```
 python frame_processor.py --video_path test-data/test_video.mp4 --output_csv output.csv
 ```
 
-Run with live webcam:
+Canlı webcam ile çalıştırma:
 ```
 python frame_processor.py --video_path "" --output_csv live_log.csv
 ```
-Command-line arguments:
+Komut satırı argümanları:
 
-```--video_path```:	Path to input video file. Empty string ("") for webcam.
-```--output_csv```:	Path to output CSV log file.
+```--video_path```:	Giriş video dosyasının yolu. Webcam için boş string ("").
+```--output_csv```:	Çıkış CSV log dosyasının yolu.
 
-## Output
-Each run produces a CSV log with columns such as:
+## Çıktı
+Her çalıştırma, şu sütunlara sahip bir CSV log üretir:
 ---
-| Column Name               | Description                                              |
-|---------------------------|----------------------------------------------------------|
-| `student_id`              | Unique ID per face                                       |
-| `timestamp`               | ISO-formatted timestamp                                  |
-| `frame_idx`               | Frame number                                             |
-| `attention_status`        | Attentive / Not attentive                                |
-| `gaze`                    | Left / Center / Right / Unknown                          |
-| `yaw_angle_deg`           | Head yaw angle in degrees                                |
-| `attention_score`         | % of time attentive (up to this frame)                   |
-| `distraction_events`      | Number of attention loss events                          |
-| `yawning_count`           | (Placeholder) — to be implemented                        |
-| `eye_closure_duration_sec`| (Placeholder) — to be implemented                        |
-| `focus_quality`           | (Placeholder for future focus score)                     |
-| `session_duration_minutes`| Duration since student's first frame                     |
+| Sütun Adı                 | Açıklama                                                  |
+|---------------------------|-----------------------------------------------------------|
+| `student_id`              | Her yüz için benzersiz ID                                 |
+| `timestamp`               | ISO formatlı zaman damgası                                |
+| `frame_idx`               | Kare numarası                                             |
+| `attention_status`        | Dikkatli / Dikkatsiz                                      |
+| `gaze`                    | Sol / Orta / Sağ / Bilinmiyor                             |
+| `yaw_angle_deg`           | Kafa yaw açısı (derece)                                   |
+| `attention_score`         | Bu kareye kadar dikkatli geçirilen zaman yüzdesi          |
+| `distraction_events`      | Dikkat kaybı olay sayısı                                  |
+| `yawning_count`           | (Yer tutucu) — henüz uygulanmadı                          |
+| `eye_closure_duration_sec`| (Yer tutucu) — henüz uygulanmadı                          |
+| `focus_quality`           | (Yer tutucu) — henüz uygulanmadı                          |
+| `session_duration_minutes`| Öğrencinin ilk karesinden itibaren geçen süre (dakika)    |
 ---
 
-Additionally, cropped student face images are saved in ```photo_id/```, and name-to-ID mappings in ```photo_id/id_name_mapping.json```.
+Ayrıca, kırpılmış öğrenci yüz görüntüleri ```photo_id/``` klasörüne kaydedilir ve ID–isim eşleşmeleri ```photo_id/id_name_mapping.json``` dosyasında tutulur.
 
-## Backend Integration
+## Backend Entegrasyonu
 
-The backend server can periodically parse the CSV to collect real-time attention metrics, cross-reference IDs/photos with the JSON mapping, and use aggregate scores to issue reports or alerts. This design allows seamless integration into other educational, analytical, or monitoring platforms
+Backend sunucusu, CSV’yi periyodik olarak okuyarak gerçek zamanlı dikkat metriklerini toplayabilir, ID/foto eşleşmelerini JSON dosyasından alabilir ve toplu skorlarla raporlar veya uyarılar üretebilir. Bu tasarım, sistemin diğer eğitim, analiz veya izleme platformlarına sorunsuz entegrasyonunu sağlar.
 
-## Notes
+## Notlar
 
-- **Performance:** EasyOCR is CPU-intensive. To accelerate, enable GPU mode in ```ocr_photo.py``` by setting ```gpu=True``` if your hardware supports it.
-- **Scaling:** The system can track up to 15 faces in real time with default MediaPipe settings (adjustable in face_utils.py).
-- **Lighting:** Head pose estimation is most reliable in well-lit scenes.
+- **Performans:** EasyOCR CPU açısından yoğundur. Donanımınız destekliyorsa ```ocr_photo.py``` içinde ```gpu=True``` yaparak GPU modunu etkinleştirebilirsiniz.
+- **Ölçeklenebilirlik:** Varsayılan MediaPipe ayarlarıyla gerçek zamanlı olarak 15 yüze kadar takip yapılabilir (face_utils.py içinde değiştirilebilir).
+- **Aydınlatma:** Kafa poz tahmini, iyi aydınlatılmış sahnelerde en güvenilirdir.
 
-## Troubleshooting
-If you encounter any issues:
-- Double-check all dependencies are installed (```requirements.txt```)
-- Confirm you are using Python 3.11 or .10 for mediapipe support
-- For problems, please open an issue in the repository and include clear reproduction steps, the exact error message, and a brief environment description.
+## Sorun Giderme
+Sorun yaşarsanız:
+- Tüm bağımlılıkların yüklü olduğundan emin olun (```requirements.txt```)
+- Mediapipe desteği için Python 3.10 veya 3.11 kullanıldığını doğrulayın
+- Problem devam ederse, depoda bir issue açın ve net tekrar adımları, tam hata mesajını ve kısa bir ortam açıklamasını ekleyin.
