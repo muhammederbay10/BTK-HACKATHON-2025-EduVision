@@ -234,9 +234,10 @@ async def signup(
             key="auth_token", 
             value=auth_token, 
             httponly=True, 
-            secure=IS_PRODUCTION,
-            samesite="none" if IS_PRODUCTION else "lax",
-            max_age=604800  # 7 days
+            secure=True,  # Always use secure cookies for Vercel deployment
+            samesite="none",  # Required for cross-origin requests
+            max_age=604800,  # 7 days
+            domain=None  # Allow the browser to set the appropriate domain
         )
         
         print(f"[DEBUG] User registration successful: {user_id}")
@@ -300,9 +301,10 @@ async def login(
             key="auth_token", 
             value=auth_token, 
             httponly=True, 
-            secure=IS_PRODUCTION,
-            samesite="none" if IS_PRODUCTION else "lax",
-            max_age=604800  # 7 days
+            secure=True,  # Always use secure cookies for Vercel deployment
+            samesite="none",  # Required for cross-origin requests
+            max_age=604800,  # 7 days
+            domain=None  # Allow the browser to set the appropriate domain
         )
         
         print(f"[DEBUG] Login successful for user ID: {user_id}")
@@ -321,7 +323,9 @@ async def logout(response: Response):
 @app.get("/api/me")
 async def get_current_user(auth_token: str = Cookie(None)):
     """Get current user information"""
+    print(f"[DEBUG] /api/me called with auth_token: {auth_token}")
     if not auth_token:
+        print("[DEBUG] No auth_token cookie found")
         raise HTTPException(status_code=401, detail="Not authenticated")
         
     try:
@@ -335,8 +339,10 @@ async def get_current_user(auth_token: str = Cookie(None)):
         conn.close()
         
         if not user:
+            print(f"[DEBUG] No user found with auth_token: {auth_token}")
             raise HTTPException(status_code=401, detail="Invalid authentication")
-            
+        
+        print(f"[DEBUG] User authenticated successfully: {user[0]}")    
         return {
             "id": user[0],
             "name": user[1],

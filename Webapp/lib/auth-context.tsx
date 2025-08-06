@@ -36,6 +36,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const res = await fetch(`${API_URL}/api/me`, {
           credentials: "include",
+          headers: {
+            "Accept": "application/json",
+          },
         });
         
         if (res.ok) {
@@ -79,6 +82,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Get user data after successful login
       const userResponse = await fetch(`${API_URL}/api/me`, {
         credentials: "include",
+        headers: {
+          "Accept": "application/json",
+        },
       });
 
       if (!userResponse.ok) {
