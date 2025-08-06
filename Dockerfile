@@ -1,14 +1,3 @@
-# ================= FRONTEND ====================
-FROM node:18-alpine AS frontend
-
-WORKDIR /app/Webapp
-
-COPY Webapp/package*.json ./
-RUN npm install
-
-COPY Webapp/ ./
-RUN npm run build
-
 # ================= BACKEND ====================
 FROM python:3.11-slim AS backend
 
@@ -20,20 +9,22 @@ RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
  && rm -rf /var/lib/apt/lists/*
 
+# Copy backend requirements
+COPY backend/requirements.txt ./backend-requirements.txt
+COPY computer-vision_integration/requirements.txt ./cv-requirements.txt
+COPY EduVision_NLP/requirements.txt ./nlp-requirements.txt   
+
 # Install Python dependencies
-COPY backend/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r backend-requirements.txt
+RUN pip install --no-cache-dir -r cv-requirements.txt
+RUN pip install --no-cache-dir -r nlp-requirements.txt       
 
 # Copy backend code
-COPY backend/ ./
+COPY backend/ ./backend/
 COPY computer-vision_integration/ ./computer-vision_integration/
 COPY EduVision_NLP/ ./EduVision_NLP/
 
-# Copy Next.js build and frontend assets
-#COPY --from=frontend /app/Webapp/.next ./frontend-next
-COPY --from=frontend /app/Webapp/package.json ./frontend-package.json
-
-# ENV vars (customize if needed)
+# ENV vars
 ENV NODE_ENV=production
 ENV PORT=8000
 ENV PYTHONUNBUFFERED=1
@@ -41,5 +32,5 @@ ENV PYTHONUNBUFFERED=1
 # Expose FastAPI port
 EXPOSE 8000
 
-# Start FastAPI with uvicorn (directly)
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+# Start FastAPI with uvicorn
+CMD ["sh", "-c", "uvicorn backend.app:app --host 0.0.0.0 --port ${PORT:-8000}"]
