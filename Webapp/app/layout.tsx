@@ -5,6 +5,7 @@ import { LanguageProvider } from "@/lib/language-context";
 import { AuthProvider } from "@/lib/auth-context";
 import Navbar from "@/components/navbar";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -34,6 +35,7 @@ export default function RootLayout({
                   {children}
                 </div>
               </div>
+              <Analytics />
             </AuthProvider>
           </LanguageProvider>
         </ThemeProvider>

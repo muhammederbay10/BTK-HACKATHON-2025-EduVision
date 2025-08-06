@@ -234,7 +234,7 @@ export default function Home() {
                 </motion.div>
               </Link>
               
-              <Link href="/examples">
+              <a href="https://drive.google.com/file/d/1dR9UlkWI5hdUMXJixfUeWgZC3cf_gshc/view?usp=sharing" target="_blank" rel="noopener noreferrer">
                 <motion.div 
                   whileHover={{ scale: 1.05, y: -2 }} 
                   whileTap={{ scale: 0.98 }}
@@ -244,7 +244,7 @@ export default function Home() {
                     Watch Demo
                   </Button>
                 </motion.div>
-              </Link>
+              </a>
             </motion.div>
           </motion.div>
         </div>
