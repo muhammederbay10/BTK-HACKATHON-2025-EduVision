@@ -234,7 +234,7 @@ Ek olarak, `photo_id/` klasörüne yüz görselleri ve `id_name_mapping.json` do
 * **Enes Halit**
 * **Osama Elbagory**
 
----
+----
 
 ## 📄 Lisans
 
