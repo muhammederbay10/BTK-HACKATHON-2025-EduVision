@@ -11,7 +11,9 @@ Eğitim videolarında öğrenci dikkatini ve katılımını analiz eden yapay ze
 * **Backend (FastAPI)**: API sunucusu
 * **Frontend (Next.js)**: Kullanıcı arayüzü
 
-## 📺[DEMO VİDEOSU İZLE.](https://drive.google.com/file/d/1dR9UlkWI5hdUMXJixfUeWgZC3cf_gshc/view?usp=sharing)
+## 📺[DEMO VİDEOSU İZLE (TIKLA).](https://drive.google.com/file/d/1dR9UlkWI5hdUMXJixfUeWgZC3cf_gshc/view?usp=sharing)
+
+## [CANLI DEMO (TIKLA).](btk-hackathon-2025-edu-vision.vercel.app)
 
 ---
 
