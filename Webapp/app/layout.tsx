@@ -1,36 +1,40 @@
-import './globals.css';
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import { ThemeProvider } from '@/components/theme-provider';
-import { LanguageProvider } from '@/lib/language-context';
-import { Navigation } from '@/components/navigation';
+import "./globals.css";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import { LanguageProvider } from "@/lib/language-context";
+import { AuthProvider } from "@/lib/auth-context";
+import Navbar from "@/components/navbar";
+import { ThemeProvider } from "@/components/theme-provider";
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'EduVision - Video Engagement Analytics',
-  description: 'AI-powered platform for analyzing student attention and engagement in virtual lessons',
+  title: "EduVision - AI-Powered Education Analytics",
+  description: "Advanced AI-powered attention tracking and engagement analytics for modern education",
 };
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <body className={inter.className}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
-          disableTransitionOnChange
         >
           <LanguageProvider>
-            <Navigation />
-            <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-purple-900">
-              {children}
-            </main>
+            <AuthProvider>
+              <div className="min-h-screen">
+                <Navbar />
+                <div className="pt-16">
+                  {children}
+                </div>
+              </div>
+            </AuthProvider>
           </LanguageProvider>
         </ThemeProvider>
       </body>
