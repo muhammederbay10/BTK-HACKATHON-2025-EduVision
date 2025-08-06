@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client"
 
 import { motion } from 'framer-motion';
@@ -116,18 +117,10 @@ export default function Home() {
     },
     {
       icon: ZapIcon,
-      title: "Real-time Alerts",
+      title: "Real-time Alerts (Comming Soon)",
       description: "Instant notifications when students need additional support or attention",
       color: "bg-yellow-500"
     }
-  ];
-
-  // Statistics
-  const stats = [
-    { number: "150K+", label: "Students Analyzed", icon: UsersIcon },
-    { number: "2.5M+", label: "Hours of Content", icon: ClockIcon },
-    { number: "98%", label: "Accuracy Rate", icon: CheckCircleIcon },
-    { number: "45%", label: "Improvement in Engagement", icon: TrendingUpIcon }
   ];
 
   // Testimonials
@@ -247,7 +240,7 @@ export default function Home() {
               className="inline-block"
             >
               <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-4 py-2 rounded-full text-sm font-medium mb-6 border border-blue-200 dark:border-blue-800">
-                🚀 AI-Powered Education Analytics
+                AI-Powered Education Analytics
               </div>
             </motion.div>
 
@@ -311,60 +304,8 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.6 }}
               className="mt-12 flex flex-wrap justify-center items-center gap-8 text-sm text-gray-600 dark:text-gray-400"
             >
-              <div className="flex items-center gap-2">
-                <ShieldCheckIcon className="h-5 w-5 text-green-500" />
-                <span>SOC 2 Compliant</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircleIcon className="h-5 w-5 text-blue-500" />
-                <span>FERPA Certified</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <StarIcon className="h-5 w-5 text-yellow-500 fill-current" />
-                <span>4.9/5 Rating</span>
-              </div>
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
 
-      {/* Statistics Section */}
-      <section className="py-16 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-8"
-          >
-            {stats.map((stat, index) => {
-              const Icon = stat.icon;
-              return (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  className="text-center group"
-                >
-                  <div className="mb-4 mx-auto w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                    <Icon className="h-8 w-8 text-blue-600" />
-                  </div>
-                  <motion.div
-                    initial={{ scale: 1 }}
-                    whileInView={{ scale: [1, 1.1, 1] }}
-                    transition={{ duration: 0.6, delay: index * 0.1 + 0.5 }}
-                    viewport={{ once: true }}
-                    className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-gray-200 mb-2"
-                  >
-                    {stat.number}
-                  </motion.div>
-                  <p className="text-gray-600 dark:text-gray-400 font-medium">{stat.label}</p>
-                </motion.div>
-              );
-            })}
+            </motion.div>
           </motion.div>
         </div>
       </section>
@@ -426,6 +367,86 @@ export default function Home() {
             </motion.div>
           </div>
           
+          
+        </div>
+      </section>
+
+
+      {/* How It Works Section */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-800 dark:text-gray-200">
+              How It Works
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+              Get started with our platform in just three simple steps
+            </p>
+          </motion.div>
+
+          <div className="max-w-6xl mx-auto">
+            <div className="grid md:grid-cols-3 gap-12">
+              {[
+                {
+                  step: "1",
+                  title: t('home.demo.step1.title') || "Upload Your Content",
+                  description: t('home.demo.step1.description') || "Upload your video lectures or live stream your classes",
+                  icon: UploadIcon,
+                  color: "bg-blue-500"
+                },
+                {
+                  step: "2", 
+                  title: t('home.demo.step2.title') || "AI Analysis",
+                  description: t('home.demo.step2.description') || "Our AI analyzes student attention and engagement in real-time",
+                  icon: BrainIcon,
+                  color: "bg-blue-600"
+                },
+                {
+                  step: "3",
+                  title: t('home.demo.step3.title') || "Get Insights",
+                  description: t('home.demo.step3.description') || "Receive detailed reports and actionable insights to improve learning outcomes",
+                  icon: BarChart3Icon,
+                  color: "bg-blue-700"
+                }
+              ].map((step, index) => {
+                const Icon = step.icon;
+                return (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: index * 0.2 }}
+                    viewport={{ once: true }}
+                    className="text-center relative"
+                  >
+                    {/* Connection line */}
+                    {index < 2 && (
+                      <div className="hidden md:block absolute top-[40px] left-1 w-full h-[2px] bg-gradient-to-r from-blue-300 to-blue-400 transform translate-x-1/2 z-0"></div>
+                    )}
+                    
+                    <div className="relative z-10">
+                      <div className={`mx-auto w-20 h-20 ${step.color} rounded-full flex items-center justify-center mb-6 shadow-lg`}>
+                        <Icon className="h-10 w-10 text-white" />
+                      </div>
+                    </div>
+                    
+                    <h3 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">
+                      {step.title}
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400 text-lg leading-relaxed">
+                      {step.description}
+                    </p>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
           {/* Enhanced call to action */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -499,39 +520,10 @@ export default function Home() {
           </div>
 
           {/* Original features as secondary grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {features.map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.1 * index }}
-                  viewport={{ once: true }}
-                  whileHover={{ y: -5, scale: 1.02 }}
-                >
-                  <Card className="h-full bg-white/60 backdrop-blur-sm dark:bg-gray-900/60 border-blue-100 dark:border-blue-800 shadow-lg hover:shadow-xl transition-all duration-300">
-                    <CardHeader className="text-center">
-                      <div className="mx-auto w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mb-4 hover:rotate-6 transition-transform duration-300">
-                        <Icon className="h-6 w-6 text-white" />
-                      </div>
-                      <CardTitle className="text-lg">{feature.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <CardDescription className="text-center">
-                        {feature.description}
-                      </CardDescription>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
-          </div>
         </div>
       </section>
 
-      {/* Testimonials Section */}
+      {/* About Us Section */}
       <section className="py-20">
         <div className="container mx-auto px-4">
           <motion.div
@@ -542,163 +534,140 @@ export default function Home() {
             className="text-center mb-16"
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-800 dark:text-gray-200">
-              Trusted by Educators Worldwide
+              About Us
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-              See what teachers and professors are saying about our platform
+              Meet the talented team behind EduVision
             </p>
           </motion.div>
 
           <div className="max-w-6xl mx-auto">
-            <motion.div
-              key={activeTestimonial}
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              transition={{ duration: 0.5 }}
-              className="text-center"
-            >
-              <Card className="max-w-4xl mx-auto bg-gradient-to-r from-blue-50 to-white dark:from-gray-800 dark:to-gray-900 border-0 shadow-2xl">
-                <CardContent className="p-12">
-                  <div className="flex justify-center mb-6">
-                    {[...Array(testimonials[activeTestimonial].rating)].map((_, i) => (
-                      <StarIcon key={i} className="h-6 w-6 text-yellow-400 fill-current" />
-                    ))}
-                  </div>
-                  <blockquote className="text-2xl font-medium text-gray-800 dark:text-gray-200 mb-8 leading-relaxed">
-                    "{testimonials[activeTestimonial].content}"
-                  </blockquote>
-                  <div className="flex items-center justify-center space-x-4">
-                    <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center">
-                      <span className="text-white font-bold text-xl">
-                        {testimonials[activeTestimonial].name.split(' ').map(n => n[0]).join('')}
-                      </span>
-                    </div>
-                    <div className="text-left">
-                      <p className="font-semibold text-gray-800 dark:text-gray-200">
-                        {testimonials[activeTestimonial].name}
-                      </p>
-                      <p className="text-gray-600 dark:text-gray-400">
-                        {testimonials[activeTestimonial].role}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            {/* Testimonial indicators */}
-            <div className="flex justify-center mt-8 space-x-2">
-              {testimonials.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setActiveTestimonial(index)}
-                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                    index === activeTestimonial 
-                      ? 'bg-blue-600 w-8' 
-                      : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400'
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section */}
-      <section className="py-20 bg-gray-50/50 dark:bg-gray-800/30">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-800 dark:text-gray-200">
-              Choose Your Plan
-            </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-              Flexible pricing options to fit your educational needs and budget
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {pricingTiers.map((tier, index) => (
+            <div className="grid md:grid-cols-3 gap-10">
+              {/* Team Member 1 */}
               <motion.div
-                key={index}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
                 viewport={{ once: true }}
-                whileHover={{ y: -8, scale: 1.02 }}
-                className={`relative ${tier.popular ? 'z-10' : ''}`}
+                whileHover={{ y: -10 }}
+                className="flex flex-col items-center"
               >
-                {tier.popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <span className="bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium">
-                      Most Popular
-                    </span>
-                  </div>
-                )}
-                <Card className={`h-full ${
-                  tier.popular 
-                    ? 'bg-white dark:bg-gray-900 border-2 border-blue-600 shadow-2xl' 
-                    : 'bg-white/80 dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 shadow-lg'
-                } hover:shadow-2xl transition-all duration-500`}>
-                  <CardHeader className="text-center pb-8">
-                    <CardTitle className="text-2xl font-bold mb-2">{tier.name}</CardTitle>
-                    <div className="mb-4">
-                      <span className="text-4xl font-bold text-blue-600">{tier.price}</span>
-                      <span className="text-gray-600 dark:text-gray-400">{tier.period}</span>
-                    </div>
-                    <CardDescription className="text-base">{tier.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <ul className="space-y-3">
-                      {tier.features.map((feature, featureIndex) => (
-                        <li key={featureIndex} className="flex items-center">
-                          <CheckCircleIcon className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                          <span className="text-gray-700 dark:text-gray-300">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <div className="pt-6">
-                      <Button 
-                        className={`w-full py-3 text-lg font-semibold transition-all duration-300 ${
-                          tier.popular
-                            ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl'
-                            : 'border-2 border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950'
-                        }`}
-                        variant={tier.popular ? 'default' : 'outline'}
-                      >
-                        {tier.name === 'Enterprise' ? 'Contact Sales' : 'Get Started'}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                <div className="w-48 h-48 rounded-full overflow-hidden mb-6 border-4 border-blue-100 dark:border-blue-900 shadow-xl">
+                  <img
+                    src="/images/team/enes.jpg"
+                    alt="Enes Halit"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = `https://ui-avatars.com/api/?name=Enes+Halit&background=0062ff&color=fff&size=256`;
+                    }}
+                  />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-2">Enes Halit</h3>
+                <p className="text-blue-600 dark:text-blue-400 font-medium mb-4">Software Developer</p>
+                <div className="flex space-x-3">
+                  <a href="#" className="text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-300 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+                    </svg>
+                  </a>
+                  <a href="#" className="text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-300 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854V1.146zm4.943 12.248V6.169H2.542v7.225h2.401zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248-.822 0-1.359.54-1.359 1.248 0 .694.521 1.248 1.327 1.248h.016zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016a5.54 5.54 0 0 1 .016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225h2.4z"/>
+                    </svg>
+                  </a>
+                </div>
               </motion.div>
-            ))}
-          </div>
 
-          {/* Money back guarantee */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            viewport={{ once: true }}
-            className="text-center mt-12"
-          >
-            <div className="inline-flex items-center space-x-2 text-gray-600 dark:text-gray-400">
-              <ShieldCheckIcon className="h-5 w-5 text-green-500" />
-              <span>30-day money-back guarantee</span>
+              {/* Team Member 2 */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                viewport={{ once: true }}
+                whileHover={{ y: -10 }}
+                className="flex flex-col items-center"
+              >
+                <div className="w-48 h-48 rounded-full overflow-hidden mb-6 border-4 border-blue-100 dark:border-blue-900 shadow-xl">
+                  <img
+                    src="/images/team/mohamad.jpg"
+                    alt="Mohamad Alnahal"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = `https://ui-avatars.com/api/?name=Mohamad+Alnahal&background=0062ff&color=fff&size=256`;
+                    }}
+                  />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-2">Mohamad Alnahal</h3>
+                <p className="text-blue-600 dark:text-blue-400 font-medium mb-4">Software Developer</p>
+                <div className="flex space-x-3">
+                  <a href="#" className="text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-300 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+                    </svg>
+                  </a>
+                  <a href="#" className="text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-300 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854V1.146zm4.943 12.248V6.169H2.542v7.225h2.401zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248-.822 0-1.359.54-1.359 1.248 0 .694.521 1.248 1.327 1.248h.016zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016a5.54 5.54 0 0 1 .016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225h2.4z"/>
+                    </svg>
+                  </a>
+                </div>
+              </motion.div>
+
+              {/* Team Member 3 */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                viewport={{ once: true }}
+                whileHover={{ y: -10 }}
+                className="flex flex-col items-center"
+              >
+                <div className="w-48 h-48 rounded-full overflow-hidden mb-6 border-4 border-blue-100 dark:border-blue-900 shadow-xl">
+                  <img
+                    src="/images/team/osama.jpg"
+                    alt="Osama Elbagory"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = `https://ui-avatars.com/api/?name=Osama+Elbagory&background=0062ff&color=fff&size=256`;
+                    }}
+                  />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-2">Osama Elbagory</h3>
+                <p className="text-blue-600 dark:text-blue-400 font-medium mb-4">Software Developer</p>
+                <div className="flex space-x-3">
+                  <a href="#" className="text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-300 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+                    </svg>
+                  </a>
+                  <a href="#" className="text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-300 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854V1.146zm4.943 12.248V6.169H2.542v7.225h2.401zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248-.822 0-1.359.54-1.359 1.248 0 .694.521 1.248 1.327 1.248h.016zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016a5.54 5.54 0 0 1 .016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225h2.4z"/>
+                    </svg>
+                  </a>
+                </div>
+              </motion.div>
             </div>
-          </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              viewport={{ once: true }}
+              className="text-center mt-16 max-w-3xl mx-auto"
+            >
+              <p className="text-xl text-gray-700 dark:text-gray-300 leading-relaxed">
+                Our passionate team of developers is dedicated to creating innovative AI solutions 
+                that transform educational experiences and improve learning outcomes.
+              </p>
+            </motion.div>
+          </div>
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section className="py-20">
+
+      {/* Integration Section (Coming Soon) */}
+      <section className="py-20 bg-gray-50/50 dark:bg-gray-800/30 relative">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -707,89 +676,11 @@ export default function Home() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-800 dark:text-gray-200">
-              How It Works
-            </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-              Get started with our platform in just three simple steps
-            </p>
-          </motion.div>
-
-          <div className="max-w-6xl mx-auto">
-            <div className="grid md:grid-cols-3 gap-12">
-              {[
-                {
-                  step: "1",
-                  title: t('home.demo.step1.title') || "Upload Your Content",
-                  description: t('home.demo.step1.description') || "Upload your video lectures or live stream your classes",
-                  icon: UploadIcon,
-                  color: "bg-blue-500"
-                },
-                {
-                  step: "2", 
-                  title: t('home.demo.step2.title') || "AI Analysis",
-                  description: t('home.demo.step2.description') || "Our AI analyzes student attention and engagement in real-time",
-                  icon: BrainIcon,
-                  color: "bg-blue-600"
-                },
-                {
-                  step: "3",
-                  title: t('home.demo.step3.title') || "Get Insights",
-                  description: t('home.demo.step3.description') || "Receive detailed reports and actionable insights to improve learning outcomes",
-                  icon: BarChart3Icon,
-                  color: "bg-blue-700"
-                }
-              ].map((step, index) => {
-                const Icon = step.icon;
-                return (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: index * 0.2 }}
-                    viewport={{ once: true }}
-                    className="text-center relative"
-                  >
-                    {/* Connection line */}
-                    {index < 2 && (
-                      <div className="hidden md:block absolute top-16 left-1/2 w-full h-0.5 bg-gradient-to-r from-blue-300 to-blue-400 transform translate-x-1/2 z-0"></div>
-                    )}
-                    
-                    <div className="relative z-10">
-                      <div className={`mx-auto w-20 h-20 ${step.color} rounded-full flex items-center justify-center mb-6 shadow-lg`}>
-                        <Icon className="h-10 w-10 text-white" />
-                      </div>
-                      <div className="absolute -top-2 -right-2 w-8 h-8 bg-white dark:bg-gray-900 rounded-full flex items-center justify-center border-2 border-blue-500 shadow-lg">
-                        <span className="text-blue-600 font-bold text-sm">{step.step}</span>
-                      </div>
-                    </div>
-                    
-                    <h3 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">
-                      {step.title}
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400 text-lg leading-relaxed">
-                      {step.description}
-                    </p>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Integration Section */}
-      <section className="py-20 bg-gray-50/50 dark:bg-gray-800/30">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-800 dark:text-gray-200">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-800 dark:text-gray-200 flex items-center justify-center gap-4">
               Seamless Integration
+              <span className="inline-block bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 px-3 py-1 rounded-full text-base font-semibold border border-blue-200 dark:border-blue-800 animate-pulse">
+                Coming Soon
+              </span>
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
               Works with all your favorite educational platforms and tools
@@ -860,23 +751,12 @@ export default function Home() {
                 >
                   <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300">
                     <UploadIcon className="mr-3 h-6 w-6" />
-                    Start Free Trial
+                    Start for Free
                     <ArrowRightIcon className="ml-3 h-5 w-5" />
                   </Button>
                 </motion.div>
               </Link>
               
-              <Link href="/contact">
-                <motion.div
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Button variant="outline" size="lg" className="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 text-lg font-semibold transition-all duration-300">
-                    <HeadphonesIcon className="mr-3 h-6 w-6" />
-                    Talk to Sales
-                  </Button>
-                </motion.div>
-              </Link>
             </div>
 
             {/* Trust indicators */}
@@ -887,69 +767,24 @@ export default function Home() {
               viewport={{ once: true }}
               className="mt-12 flex flex-wrap justify-center items-center gap-8 text-sm opacity-80"
             >
-              <div className="flex items-center gap-2">
-                <CheckCircleIcon className="h-5 w-5" />
-                <span>No setup fees</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircleIcon className="h-5 w-5" />
-                <span>Cancel anytime</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircleIcon className="h-5 w-5" />
-                <span>24/7 support</span>
-              </div>
             </motion.div>
           </motion.div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-16 bg-gray-900 text-white">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div className="space-y-4">
+      {/* Slim Footer */}
+      <footer className="py-10 bg-gray-900 text-white">
+        <div className="container mx-auto px-6">
+          <div className="border-t border-gray-800 pt-8 pb-2 flex flex-col md:flex-row justify-between items-center">
+            <div className="text-left mb-6 md:mb-0 md:max-w-xl">
               <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
                 EduAI Analytics
               </h3>
-              <p className="text-gray-400 leading-relaxed">
+              <p className="text-gray-400 leading-relaxed mt-3 mr-4">
                 Transforming education through AI-powered attention analytics and engagement insights.
               </p>
             </div>
-            
-            <div>
-              <h4 className="font-semibold mb-4 text-lg">Product</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Features</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Pricing</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">API</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Integrations</a></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-4 text-lg">Company</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">About</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-4 text-lg">Support</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Documentation</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
-              </ul>
-            </div>
-          </div>
-          
-          <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 EduAI Analytics. All rights reserved.</p>
+            <p className="text-gray-400 ml-0 md:ml-6">&copy; 2025 EduAI Analytics. All rights reserved.</p>
           </div>
         </div>
       </footer>
